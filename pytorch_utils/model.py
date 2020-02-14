@@ -115,10 +115,10 @@ class BengaliModel(nn.Module):
         return self._logits(input, self.linear_y_1, self.linear_y_2)
 
     def forward(self, input):
-        output     = self.features(input)
-        output_x   = self.logits_x(output)
-        output_y   = self.logits_y(output)
-        output_z   = self.logits_z(output)
+        output = self.features(input)
+        output_x = self.logits_x(output)
+        output_y = self.logits_y(output)
+        output_z = self.logits_z(output)
         
         return output_x, output_y, output_z
 

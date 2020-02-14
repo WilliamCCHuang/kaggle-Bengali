@@ -90,11 +90,11 @@ class MultiTaskLoss(nn.Module):
     
     Arguments:
         criterions {list} -- list of criterions
-        task_weights {list} -- weights for weighted sum of all losses
+        task_weights {list} -- weights for weighted summation of all losses
     
     Returns:
-        total_loss {torch.Tensor} -- sum of all losses of each task
-        losses {list} -- list of losses of each task
+        total_loss {torch.Tensor} -- sum of all task losses
+        losses {list} -- list of task losses
     """
 
     def __init__(self, criterions: list, task_weights: list=None):

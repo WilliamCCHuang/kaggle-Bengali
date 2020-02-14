@@ -55,7 +55,7 @@ def main():
     base_model = BaseModel()
     model = BengaliModel(base_model, train_dataloader, val_dataloader,
                          MultiTaskCrossEntropyLoss(n_task=3), optim.Adam(base_model.parameters()))
-    
+
     trainer = pl.Trainer(max_epochs=5, early_stop_callback=False)
     trainer.fit(model)
     

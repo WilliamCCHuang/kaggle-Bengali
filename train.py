@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.datasets import MNIST
 import torchvision.transforms as transforms
 
-from bengali_model import BengaliModel
+from bengali_models import BengaliModel
 from pytorch_utils.losses import MultiTaskCrossEntropyLoss
 
 import pytorch_lightning as pl

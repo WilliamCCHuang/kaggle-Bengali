@@ -128,7 +128,9 @@ if __name__ == "__main__":
     input = torch.rand((1, 1, 64, 64))
 
     model = BengaliModel(model_name='se_resnet152', hidden_dim=128, dropout=0.5)
-    output = model(input)
-    print(output.size())
-    print(output)
+    output_x, output_y, output_z = model(input)
+    print(output_x.size())
+    print(output_y.size())
+    print(output_z.size())
+    print(output_x)
 

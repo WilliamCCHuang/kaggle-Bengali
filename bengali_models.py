@@ -3,8 +3,8 @@ import numpy as np
 import torch
 import pytorch_lightning as pl
 
-from utils import multi_task_macro_recall
-from pytorch_lightning_utils.multi_task_model import MultiTaskBaseModel
+from kaggle_utils import multi_task_macro_recall
+from pytorch_lightning_utils.multi_task_models import MultiTaskBaseModel
 
 
 class BengaliModel(MultiTaskBaseModel):

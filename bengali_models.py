@@ -20,6 +20,11 @@ class BengaliModel(MultiTaskBaseModel):
     def validation_step(self, batch, batch_idx):
         # print(f'batch index: {batch_idx}')
         x_train, y_trains = batch
+
+        # print('valid:', batch_idx)
+        # print('data:', x_train.device)
+        # print('model:', next(self.model.parameters()).device)
+
         y_preds = self.forward(x_train)
 
         total_loss, losses = self.criterions(y_preds, y_trains)
@@ -29,8 +34,8 @@ class BengaliModel(MultiTaskBaseModel):
 
         # print(f'total_loss: {total_loss}, loss_1: {losses[0]}, loss_2: {losses[1]}, loss_3 {losses[2]}')
 
-        y_preds = [torch.argmax(y_pred, axis=1).numpy() for y_pred in y_preds]
-        y_trains = [y_train.numpy() for y_train in y_trains]
+        y_preds = [torch.argmax(y_pred, axis=1).cpu().numpy() for y_pred in y_preds]
+        y_trains = [y_train/cpu().numpy() for y_train in y_trains]
 
         # print('y_preds:')
         # print(y_preds)

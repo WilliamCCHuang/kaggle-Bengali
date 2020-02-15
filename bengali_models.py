@@ -97,7 +97,7 @@ class BengaliModel(MultiTaskBaseModel):
             'consonants_recall': recalls[2]
         } # data for tensorboard can be a python number, np.array, or torch.tensor
 
-        return tensorboard_logs
+        return {'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
 
     def configure_optimizers(self):
         optimizers = [self.optimizer]

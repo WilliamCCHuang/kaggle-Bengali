@@ -102,10 +102,14 @@ class MultiTaskLoss(nn.Module):
 
         assert len(criterions) == len(task_weights), \
             'The number of `criterions` is not consistent of that of `task_weights`.'
+
+        task_weights = task_weights or np.array([1.0] * len(criterions)) / len(criterions)
+        assert np.sum(task_weights) == 1.0 \
+            f'The sum of `task_weights` should be equal to one, but get {np.sum(task_weights)}.'
             
         self.n_task = len(criterions)
         self.criterions = criterions
-        self.task_weights = task_weights or [1] * len(criterions) # torch.register_buffer(...)
+        self.task_weights = task_weights # torch.register_buffer(...)
 
     def forward(self, inputs, targets):
         assert isinstance(inputs, (tuple, list)), 'The inputs of multiplt tasks should be a tuple or a list.'
@@ -133,7 +137,7 @@ class MultiTaskCrossEntropyLoss(MultiTaskLoss):
     """
     def __init__(self, n_task: int, task_weights: list=None, weight: torch.Tensor=None,
                  size_average=None, ignore_index=-100, reduce=None, reduction='mean'):
-        task_weights = task_weights or [1] * n_task
+        task_weights = task_weights or np.array([1.0 / self.n_task] * len(criterions))
         criterions = [CrossEntropyLoss(weight, size_average, ignore_index, reduce, reduction) for _ in range(n_task)]
         super(MultiTaskCrossEntropyLoss, self).__init__(criterions, task_weights)
 

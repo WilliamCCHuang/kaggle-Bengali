@@ -14,8 +14,8 @@ $ python test.py
     - [x] DenseNet
     - [x] EfficientNet
     - [x] Se-ResNet
-    - [ ] Se-ResNext
-    - [ ] support different input size
+    - [x] Se-ResNext
+    - [x] support different input size
 * Training framework
     - [x] run in CPU
     - [ ] run in GPU

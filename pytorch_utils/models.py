@@ -59,13 +59,13 @@ class BaseCNNModel(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d((1,1))
     
     def features(self, input):
-        if self.model_name.find('efficientnet') == 0:
+        if self.model_name.startswith('efficientnet'):
             return self.cnn.extract_features(input)
         else:
             return self.cnn.features(input)
 
     def _logits(self, input, linear_1, linear_2):
-        if self.model_name.find('efficientnet') == 0:
+        if self.model_name.startswith('efficientnet'):
             output = self.pool(input)
 
             if not self.dropout:
@@ -80,7 +80,7 @@ class BaseCNNModel(nn.Module):
 
             output = linear_2(output)
 
-        elif self.model_name.find('resnet') == 0:
+        elif self.model_name.startswith('resnet'):
             output = self.pool(input)
             output = output.view(output.size(0), -1)
             output = linear_1(output)
@@ -88,7 +88,7 @@ class BaseCNNModel(nn.Module):
             output = self.dropout(output)
             output = linear_2(output)
             
-        elif self.model_name.find('densenet') == 0:
+        elif self.model_name.startswith('densenet'):
             output = F.relu(input, inplace = True)
             output = self.pool(output)
             output = output.view(output.size(0), -1)
@@ -97,7 +97,7 @@ class BaseCNNModel(nn.Module):
             output = self.dropout(output)
             output = linear_2(output)
             
-        elif self.model_name.find('se_resnet') == 0:
+        elif self.model_name.startswith('se_resnet'):
             output = self.pool(input)
 
             if not self.dropout:

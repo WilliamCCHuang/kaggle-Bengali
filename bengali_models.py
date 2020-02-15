@@ -18,6 +18,7 @@ class BengaliModel(MultiTaskBaseModel):
         self.scheduler = scheduler
 
     def validation_step(self, batch, batch_idx):
+        # print(f'batch index: {batch_idx}')
         x_train, y_trains = batch
         y_preds = self.forward(x_train)
 
@@ -26,8 +27,15 @@ class BengaliModel(MultiTaskBaseModel):
         total_loss = total_loss.item()
         losses = [loss.item() for loss in losses]
 
+        # print(f'total_loss: {total_loss}, loss_1: {losses[0]}, loss_2: {losses[1]}, loss_3 {losses[2]}')
+
         y_preds = [torch.argmax(y_pred, axis=1).numpy() for y_pred in y_preds]
         y_trains = [y_train.numpy() for y_train in y_trains]
+
+        # print('y_preds:')
+        # print(y_preds)
+        # print(f'y_trains:')
+        # print(y_trains)
 
         output = {
             'batch_size': x_train.size(0),
@@ -42,6 +50,7 @@ class BengaliModel(MultiTaskBaseModel):
         return output
 
     def validation_end(self, outputs):
+        # print('end')
         total_data = sum(output['batch_size'] for output in outputs)
         
         total_val_loss = sum(output['total_val_loss'] * output['batch_size'] for output in outputs) / total_data
@@ -49,27 +58,38 @@ class BengaliModel(MultiTaskBaseModel):
         val_loss_2 = sum(output['val_loss_2'] * output['batch_size'] for output in outputs) / total_data
         val_loss_3 = sum(output['val_loss_3'] * output['batch_size'] for output in outputs) / total_data
 
+        # print(f'total_val_loss: {total_val_loss}, val_loss_1: {val_loss_1}, val_loss_2: {val_loss_2}, val_loss_3: {val_loss_3}')
+
         y_preds_1 = np.hstack([output['y_preds'][0] for output in outputs])
         y_preds_2 = np.hstack([output['y_preds'][1] for output in outputs])
         y_preds_3 = np.hstack([output['y_preds'][2] for output in outputs])
 
+        # print('y_preds_1')
+        # print(y_preds_1)
+        
         y_trains_1 = np.hstack([output['y_trains'][0] for output in outputs])
         y_trains_2 = np.hstack([output['y_trains'][1] for output in outputs])
         y_trains_3 = np.hstack([output['y_trains'][2] for output in outputs])
 
-        # total_recall, recalls = multi_task_macro_recall(pred_graphemes=y_preds_1, true_graphemes=y_trains_1,
-        #                                                 pred_vowels=y_preds_2, true_vowels=y_trains_2,
-        #                                                 pred_consonants=y_preds_3, true_consonants=y_trains_3)
+        # print('y_trains_1')
+        # print(y_trains_1)
+
+        total_recall, recalls = multi_task_macro_recall(true_graphemes=y_trains_1, pred_graphemes=y_preds_1,
+                                                        true_vowels=y_trains_2, pred_vowels=y_preds_2,
+                                                        true_consonants=y_trains_3, pred_consonants=y_preds_3,
+                                                        n_grapheme=10, n_vowel=10, n_consonant=10)
+
+        # print(f'total_recall: {total_recall}, recall_1: {recalls[0]}, recall_2: {recalls[1]}, recall_3: {recalls[2]}')
 
         tensorboard_logs = {
             'total_val_loss': total_val_loss,
             **{
                 f'val_loss_{i+1}': loss for i, loss in enumerate([val_loss_1, val_loss_2, val_loss_3])
             },
-            # 'total_recall': total_recall,
-            # 'graphemes_recall': recalls[0],
-            # 'vowels_recall': recalls[1],
-            # 'consonants_recall': recalls[2]
+            'total_recall': total_recall,
+            'graphemes_recall': recalls[0],
+            'vowels_recall': recalls[1],
+            'consonants_recall': recalls[2]
         } # data for tensorboard can be a python number, np.array, or torch.tensor
 
         return tensorboard_logs

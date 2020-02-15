@@ -56,7 +56,8 @@ def main():
     model = BengaliModel(base_model, train_dataloader, val_dataloader,
                          MultiTaskCrossEntropyLoss(n_task=3), optim.Adam(base_model.parameters()))
 
-    trainer = pl.Trainer(max_epochs=0, early_stop_callback=False)
+    # trainer = pl.Trainer(max_epochs=0, early_stop_callback=False) # for cpu
+    trainer = pl.Trainer(max_epochs=0, early_stop_callback=False, gpus=1) # for gpu
     trainer.fit(model)
     
 

@@ -18,7 +18,7 @@ $ python test.py
     - [x] support different input size
 * Training framework
     - [x] run in CPU
-    - [ ] run in GPU
+    - [x] run in GPU
 * Optimizers
     - [x] RAdam
     - [ ] Look-ahead

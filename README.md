@@ -47,5 +47,5 @@ $ python test.py
 * Ensemble
     - [ ] done
 * Few-shot learning
-    -[ ] [Few-shot learning](https://www.kaggle.com/c/landmark-recognition-challenge/discussion/57896) ()optional
+    - [ ] [few-shot learning](https://www.kaggle.com/c/landmark-recognition-challenge/discussion/57896) ()optional
 * Metric Learning (?)

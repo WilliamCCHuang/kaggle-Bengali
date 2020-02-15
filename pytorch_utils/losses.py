@@ -1,3 +1,5 @@
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -100,12 +102,13 @@ class MultiTaskLoss(nn.Module):
     def __init__(self, criterions: list, task_weights: list=None):
         super(MultiTaskLoss, self).__init__()
 
-        assert len(criterions) == len(task_weights), \
-            'The number of `criterions` is not consistent of that of `task_weights`.'
+        if task_weights:
+            assert len(criterions) == len(task_weights), \
+                'The number of `criterions` is not consistent of that of `task_weights`.'
 
-        task_weights = task_weights or np.array([1.0] * len(criterions)) / len(criterions)
-        assert np.sum(task_weights) == 1.0 \
-            f'The sum of `task_weights` should be equal to one, but get {np.sum(task_weights)}.'
+        task_weights = task_weights or [1.0] * len(criterions) / len(criterions)
+        assert np.sum(task_weights) == 1.0, \
+            f'The sum of `task_weights` should be equal to one, but got {np.sum(task_weights)}.'
             
         self.n_task = len(criterions)
         self.criterions = criterions
@@ -137,7 +140,7 @@ class MultiTaskCrossEntropyLoss(MultiTaskLoss):
     """
     def __init__(self, n_task: int, task_weights: list=None, weight: torch.Tensor=None,
                  size_average=None, ignore_index=-100, reduce=None, reduction='mean'):
-        task_weights = task_weights or np.array([1.0 / self.n_task] * len(criterions))
+        task_weights = task_weights or [1.0 / n_task] * n_task
         criterions = [CrossEntropyLoss(weight, size_average, ignore_index, reduce, reduction) for _ in range(n_task)]
         super(MultiTaskCrossEntropyLoss, self).__init__(criterions, task_weights)
 
@@ -145,7 +148,9 @@ class MultiTaskCrossEntropyLoss(MultiTaskLoss):
 if __name__ == "__main__":
     n_task = 2
     cross_entropy_loss = CrossEntropyLoss()
-    multi_task_criterion = MultiTaskCrossEntropyLoss(n_task, task_weights=[1, 2])
+    multi_task_criterion = MultiTaskCrossEntropyLoss(n_task, task_weights=None)
+
+    print(multi_task_criterion.task_weights)
 
     inputs = [torch.randn(3, 5, requires_grad=True) for _ in range(n_task)]
     targets = [torch.empty(3, dtype=torch.long).random_(5) for _ in range(n_task)]

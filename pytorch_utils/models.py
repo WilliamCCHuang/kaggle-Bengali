@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import pretrainedmodels
-import pretrainedmodels.utils as utils
 from efficientnet_pytorch import EfficientNet
 
 
@@ -46,6 +45,9 @@ class BaseCNNModel(nn.Module):
                 out_channels = self.cnn.layer0.conv1.out_channels # get original out_channels
                 # print(out_channels)
                 self.cnn.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+            elif model_name.startswith('se_resnext'):
+                out_channels = self.cnn.layer0.conv1.out_channels
+                self.cnn.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             dim_feats = self.cnn.last_linear.in_features  
         
         self.linear_x_1 = nn.Linear(dim_feats, hidden_dim)
@@ -85,7 +87,10 @@ class BaseCNNModel(nn.Module):
             output = output.view(output.size(0), -1)
             output = linear_1(output)
             output = F.relu(output)
-            output = self.dropout(output)
+            
+            if not self.dropout:
+                output = self.dropout(output)
+
             output = linear_2(output)
             
         elif self.model_name.startswith('densenet'):
@@ -94,7 +99,10 @@ class BaseCNNModel(nn.Module):
             output = output.view(output.size(0), -1)
             output = linear_1(output)
             output = F.relu(output)
-            output = self.dropout(output)
+            
+            if not self.dropout:
+                output = self.dropout(output)
+
             output = linear_2(output)
             
         elif self.model_name.startswith('se_resnet'):
@@ -109,6 +117,22 @@ class BaseCNNModel(nn.Module):
 
             if not self.dropout:
               output = self.dropout(output)
+
+            output = linear_2(output)
+
+        elif self.model_name.startswith('se_resnext'):
+            output = self.pool(input)
+
+            if not self.dropout:
+              output = self.dropout(output)
+
+            output = output.view(output.size(0), -1)
+            output = linear_1(output)
+            output = F.relu(output)
+
+            if not self.dropout:
+              output = self.dropout(output)
+
             output = linear_2(output)
         
         return output
@@ -142,7 +166,7 @@ if __name__ == "__main__":
         'resnet18', 'resnet152', # out_channels = 64
         'densenet121', 'densenet161', # out_channels = 64
         'se_resnet50', 'se_resnet152',
-        # 'se_resnext50_32x4d', 'se_resnext101_32x4d', # group = 32
+        'se_resnext50_32x4d', 'se_resnext101_32x4d',
         'efficientnet-b0', # out_channels = 32
         'efficientnet-b7' # out_channels = 64
     ]

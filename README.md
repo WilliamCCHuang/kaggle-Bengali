@@ -34,7 +34,7 @@ $ python test.py
     - [ ] cutmix + mixup
 * Data
     - [ ] different input size
-    - [ ] [progressive resizing](https://towardsdatascience.com/boost-your-cnn-image-classifier-performance-with-progressive-resizing-in-keras-a7d96da06e20) (**optional**)
+    - [ ] [progressive resizing](https://towardsdatascience.com/boost-your-cnn-image-classifier-performance-with-progressive-resizing-in-keras-a7d96da06e20) (*optional*)
     - [ ] color reverse (black to white, white to black)
     - [ ] fake data
         - [ ] add random image with uniform labels
@@ -47,5 +47,5 @@ $ python test.py
 * Ensemble
     - [ ] done
 * Few-shot learning
-    - [ ] [few-shot learning](https://www.kaggle.com/c/landmark-recognition-challenge/discussion/57896) (**optional**modi)
+    - [ ] [few-shot learning](https://www.kaggle.com/c/landmark-recognition-challenge/discussion/57896) (*optional*)
 * Metric Learning (?)

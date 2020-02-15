@@ -11,8 +11,9 @@ $ python test.py
 ## TODO
 
 * Models
-    - [ ] DenseNet
-    - [ ] EfficientNet
+    - [x] DenseNet
+    - [x] EfficientNet
+    - [x] Se-ResNet
     - [ ] Se-ResNext
     - [ ] support different input size
 * Training framework

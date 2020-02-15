@@ -21,10 +21,10 @@ class TestDataset(Dataset):
         self.ref_dataset = MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor())
 
     def __len__(self):
-        return len(self.ref_dataset)
+        return 10
 
     def __getitem__(self, index):
-        x, y = self.ref_dataset[index]
+        x, y = self.ref_dataset[index % 10]
 
         return x, [y, y, y]
 
@@ -56,7 +56,7 @@ def main():
     model = BengaliModel(base_model, train_dataloader, val_dataloader,
                          MultiTaskCrossEntropyLoss(n_task=3), optim.Adam(base_model.parameters()))
 
-    trainer = pl.Trainer(max_epochs=5, early_stop_callback=False)
+    trainer = pl.Trainer(max_epochs=0, early_stop_callback=False)
     trainer.fit(model)
     
 

@@ -8,6 +8,14 @@ Run the following command to test our training framework:
 $ python test.py
 ```
 
+Once the training is completed, see the `lightning_logs` to check losses do get smaller
+
+```
+$ tensorboard --logdir=lightning_logs/version_x
+```
+
+, where `version_x` is the latest version.
+
 ## TODO
 
 * Models

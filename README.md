@@ -2,7 +2,7 @@
 
 ## Test
 
-Run the following command to test:
+Run the following command to test our training framework:
 
 ```
 $ python test.py

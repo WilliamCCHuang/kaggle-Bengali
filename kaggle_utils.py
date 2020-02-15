@@ -2,9 +2,9 @@ import numpy as np
 from sklearn.metrics import recall_score
 
 
-def multi_task_macro_recall(pred_graphemes: np.array, true_graphemes: np.array,
-                            pred_vowels: np.array, true_vowels: np.array,
-                            pred_consonants: np.array, true_consonants: np.array,
+def multi_task_macro_recall(true_graphemes: np.array, pred_graphemes: np.array,
+                            true_vowels: np.array, pred_vowels: np.array,
+                            true_consonants: np.array, pred_consonants: np.array,
                             n_grapheme=168, n_vowel=11, n_consonant=7):
     
     # pred_label_graphemes = torch.argmax(pred_graphemes, dim=1).cpu().numpy()
@@ -21,9 +21,9 @@ def multi_task_macro_recall(pred_graphemes: np.array, true_graphemes: np.array,
     assert pred_consonants.ndim == 1
     assert true_consonants.ndim == 1
 
-    grapheme_recall = recall_score(pred_graphemes, true_graphemes, average='macro')
-    vowel_recall = recall_score(pred_vowels, true_vowels, average='macro')
-    consonant_recall = recall_score(pred_consonants, true_consonants, average='macro')
+    grapheme_recall = recall_score(true_graphemes, pred_graphemes, labels=np.arange(n_grapheme), average='macro')
+    vowel_recall = recall_score(true_vowels, pred_vowels, labels=np.arange(n_vowel), average='macro')
+    consonant_recall = recall_score(true_consonants, pred_consonants, labels=np.arange(n_consonant), average='macro')
     recalls = [grapheme_recall, vowel_recall, consonant_recall]
     final_score = np.average(recalls, weights=[2, 1, 1])
 

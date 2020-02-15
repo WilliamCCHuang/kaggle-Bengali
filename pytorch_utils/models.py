@@ -9,7 +9,7 @@ import pretrainedmodels.utils as utils
 from efficientnet_pytorch import EfficientNet
 
 
-class BengaliModel(nn.Module):
+class BaseCNNModel(nn.Module):
     '''
     The pooling:
     Note that the pool here is for GlobalAveragePooling for now
@@ -21,23 +21,31 @@ class BengaliModel(nn.Module):
         
     '''
     def __init__(self, model_name, hidden_dim, dropout):
-        super(BengaliModel, self).__init__()
+        super(BaseCNNModel, self).__init__()
         self.model_name = model_name # just for record
         self.hidden_dim = hidden_dim
 
-        if model_name.find('efficientnet') == 0:
+        # out_channels are different in different models
+        if model_name.startswith('efficientnet'):
             self.cnn = EfficientNet.from_name(model_name)
-            self.cnn._conv_stem = nn.Conv2d(1, 32, 3, stride=1, padding=0)
+            out_channels = self.cnn._conv_stem.out_channels # get original out_channels
+            # print(out_channels)
+            self.cnn._conv_stem = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             dim_feats= self.cnn._fc.in_features
         else:
-            self.cnn = pretrainedmodels.__dict__[model_name](num_classes=1000, 
-                                                              pretrained=None)
-            if model_name.find('resnet') == 0:
-                self.cnn.conv1 = nn.Conv2d(1, 64, 3, stride=1, padding=0)
-            elif model_name.find('densenet') == 0:
-                self.cnn.features.conv0 = nn.Conv2d(1, 64, 3, stride=1, padding=0)
-            elif model_name.find('se_resnet') == 0:
-                self.cnn.layer0.conv1 = nn.Conv2d(1, 64, 3, stride=1, padding=0)
+            self.cnn = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained=None)
+            if model_name.startswith('resnet'):
+                out_channels = self.cnn.conv1.out_channels # get original out_channels
+                # print(out_channels)
+                self.cnn.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+            elif model_name.startswith('densenet'):
+                out_channels = self.cnn.features.conv0.out_channels # get original out_channels
+                # print(out_channels)
+                self.cnn.features.conv0 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+            elif model_name.startswith('se_resnet'):
+                out_channels = self.cnn.layer0.conv1.out_channels # get original out_channels
+                # print(out_channels)
+                self.cnn.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             dim_feats = self.cnn.last_linear.in_features  
         
         self.linear_x_1 = nn.Linear(dim_feats, hidden_dim)
@@ -112,7 +120,7 @@ class BengaliModel(nn.Module):
         return self._logits(input, self.linear_y_1, self.linear_y_2)
 
     def logits_z(self, input):
-        return self._logits(input, self.linear_y_1, self.linear_y_2)
+        return self._logits(input, self.linear_z_1, self.linear_z_2)
 
     def forward(self, input):
         output = self.features(input)
@@ -124,13 +132,46 @@ class BengaliModel(nn.Module):
 
 
 if __name__ == "__main__":
+    from tqdm import tqdm
+    
     # produce random square image input
-    input = torch.rand((1, 1, 64, 64))
+    input_32x32 = torch.rand((1, 1, 32, 32))
+    input_64x64 = torch.rand((1, 1, 64, 64))
 
-    model = BengaliModel(model_name='se_resnet152', hidden_dim=128, dropout=0.5)
-    output_x, output_y, output_z = model(input)
-    print(output_x.size())
-    print(output_y.size())
-    print(output_z.size())
-    print(output_x)
+    model_names = [
+        'resnet18', 'resnet152', # out_channels = 64
+        'densenet121', 'densenet161', # out_channels = 64
+        'se_resnet50', 'se_resnet152',
+        # 'se_resnext50_32x4d', 'se_resnext101_32x4d', # group = 32
+        'efficientnet-b0', # out_channels = 32
+        'efficientnet-b7' # out_channels = 64
+    ]
 
+    for model_name in tqdm(model_names, desc='model'):
+        model = BaseCNNModel(model_name=model_name, hidden_dim=128, dropout=0.5)
+        model.eval()
+
+        with torch.no_grad():
+            try:
+                output_x_32x32, output_y_32x32, output_z_32x32 = model(input_32x32)
+            except RuntimeError as e:
+                print(model_name, '32x32')
+                raise ValueError(e)
+            try:
+                output_x_64x64, output_y_64x64, output_z_64x64 = model(input_64x64)
+            except RuntimeError as e:
+                print(model_name, '64x64')
+        
+        logs = 'model name: {}, {}: {}'
+        if list(output_x_32x32.size()) != [1, 168]:
+            raise RuntimeError(logs.format(model_name, 'output_x_32x32', output_x_32x32.size()))
+        if list(output_y_32x32.size()) != [1, 11]:
+            raise RuntimeError(logs.format(model_name, 'output_y_32x32', output_y_32x32.size()))
+        if list(output_z_32x32.size()) != [1, 7]:
+            raise RuntimeError(logs.format(model_name, 'output_z_32x32', output_z_32x32.size()))
+        if list(output_x_64x64.size()) != [1, 168]:
+            raise RuntimeError(logs.format(model_name, 'output_x_64x64', output_x_64x64.size()))
+        if list(output_y_64x64.size()) != [1, 11]:
+            raise RuntimeError(logs.format(model_name, 'output_y_64x64', output_y_64x64.size()))
+        if list(output_z_64x64.size()) != [1, 7]:
+            raise RuntimeError(logs.format(model_name, 'output_z_64x64', output_z_64x64.size()))

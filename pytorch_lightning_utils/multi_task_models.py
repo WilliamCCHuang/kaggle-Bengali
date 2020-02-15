@@ -48,4 +48,4 @@ class MultiTaskBaseModel(pl.LightningModule):
             }
         } # data for tensorboard can be a python number, np.array, or torch.tensor
 
-        return {'loss': total_loss, 'log': tensorboard_logs}
+        return {'loss': total_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}

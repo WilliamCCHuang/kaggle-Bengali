@@ -4,6 +4,8 @@ from sklearn.metrics import recall_score
 
 
 def load_images(mode):
+    # TODO: concatenate all feather files
+    
     # assert mode in ['train', 'test'],
     assert mode == 'test'
 

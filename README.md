@@ -46,7 +46,7 @@ $ tensorboard --logdir=lightning_logs/version_x
 * Image Augmentations
     - [ ] cutout
     - [ ] mixup
-     -[ ] cutmix
+    - [ ] cutmix
     - [ ] augmix
     - [ ] cutmix + mixup
 * Data

@@ -3,3 +3,5 @@ __pycache__
 .vscode
 MNIST
 lightning_logs
+bengaliai-cv19.zip
+train_image_data_0.feather

@@ -28,18 +28,26 @@ $ tensorboard --logdir=lightning_logs/version_x
     - [x] run in CPU
     - [x] run in GPU
 * Optimizers
-    - [x] RAdam
+    - [x] Adam
+    - [x] RAdam (reported the same with Adam)
     - [ ] Look-ahead
+* Scheduler
+    - [ ] ReduceOnPlateau (reported better than OneCycle in discussion)
+    - [ ] OneCycle
 * Loss functions
     - [x] TopkCrossEntropyLoss
-    - [x] Weighted multi-task cross entropy
+    - [x] Weighted multi-task cross entropy (reported better than the others in discussion)
+    - [ ] Focal loss
+    - [ ] Label Smoothing Regularization
 * Cross Validation
     - [ ] 5 folds (need to check the distribution of classes)
 * Adversarial Training
     - [ ] optional
 * Image Augmentations
-    - [ ] cutmix
+    - [ ] cutout
     - [ ] mixup
+     -[ ] cutmix
+    - [ ] augmix
     - [ ] cutmix + mixup
 * Data
     - [ ] different input size
@@ -47,7 +55,7 @@ $ tensorboard --logdir=lightning_logs/version_x
     - [ ] color reverse (black to white, white to black)
     - [ ] fake data
         - [ ] add random image with uniform labels
-        - [ ]add digital, english, japanese, even mandarin letters with uniform labels
+        - [ ] add digital, english, japanese, even mandarin letters with uniform labels
         - [ ] generate fake Bengali graphemes consist grapheme root, vowel diacritics, and consonant diacritics selected randomly
     - [ ] add [Ekush dataset](https://www.kaggle.com/shahariar/ekush)
     - [ ] removing confusing images
@@ -57,4 +65,9 @@ $ tensorboard --logdir=lightning_logs/version_x
     - [ ] done
 * Few-shot learning
     - [ ] [few-shot learning](https://www.kaggle.com/c/landmark-recognition-challenge/discussion/57896) (*optional*)
+* Pseudo label
+    - [ ] Noise student
 * Metric Learning (?)
+
+## Key points
+    * grapheme recall dominates

@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 
 import torch
@@ -46,6 +47,26 @@ class TopkCrossEntropyLoss(_WeightedLoss):
             return loss.sum()
         elif self.reduction == 'mean':
             return loss.mean()
+
+
+class LabelSmoothingLoss(nn.Module):
+
+    def __init__(self, smoothing=0.0):
+        assert 0 <= smoothing <=1
+        super(LabelSmoothingLoss, self).__init__()
+
+        self.smoothing = smoothing
+
+    def forward(self, input, target):
+        log_prob = F.log_softmax(input, dim=-1)
+
+        with torch.no_grad():
+            smooth_target = torch.zeros_like(input)
+            smooth_target.fill_(self.smoothing / (target.size(-1) - 1))
+            smooth_target.scatter_(1, target.data.unsqueeze(-1), 1.0 - self.smoothing)
+        loss = (-smooth_target * log_prob).sum(-1).mean()
+
+        return loss
 
 
 class FocalLoss(nn.Module):
@@ -106,7 +127,7 @@ class MultiTaskLoss(nn.Module):
             assert len(criterions) == len(task_weights), \
                 'The number of `criterions` is not consistent of that of `task_weights`.'
 
-        task_weights = task_weights or [1.0] * len(criterions) / len(criterions)
+        task_weights = task_weights or [1.0 / len(criterions)] * len(criterions)
         assert np.sum(task_weights) == 1.0, \
             f'The sum of `task_weights` should be equal to one, but got {np.sum(task_weights)}.'
             
@@ -130,23 +151,44 @@ class MultiTaskCrossEntropyLoss(MultiTaskLoss):
     """
     total_loss = task_weights[0] * CrossEntropy(inputs[0], targets[0]) + ... +
                  task_weights[-1] * CrossEntropy(inputs[-1], targets[-1])
-    
-    Arguments:
-        MultiTaskLoss {[type]} -- [description]
 
     Returns:
         total_loss {torch.Tensor} -- sum of all losses of each task
         losses {list} -- loss of each task
     """
+
     def __init__(self, n_task: int, task_weights: list=None, weight: torch.Tensor=None,
                  size_average=None, ignore_index=-100, reduce=None, reduction='mean'):
-        task_weights = task_weights or [1.0 / n_task] * n_task
         criterions = [CrossEntropyLoss(weight, size_average, ignore_index, reduce, reduction) for _ in range(n_task)]
         super(MultiTaskCrossEntropyLoss, self).__init__(criterions, task_weights)
 
 
+class MultiTaskLabelSmoothingLoss(MultiTaskLoss):
+    """
+    total_loss = task_weights[0] * LabelSmoothingLoss(inputs[0], targets[0]) + ... +
+                 task_weights[-1] * LabelSmoothingLoss(inputs[-1], targets[-1])
+
+    Returns:
+        total_loss {torch.Tensor} -- sum of all losses of each task
+        losses {list} -- loss of each task
+    """
+
+    def __init__(self, n_task: int, tast_weights: list=None, smoothings: Union[float, list]=0.1):
+        if isinstance(smoothings, list):
+            assert len(smoothings) == n_task, 'The number of `smoothings` should equal to `n_task`.'
+        elif isinstance(smoothings, float):
+            assert 0 <= smoothings <= 1.0, 'The elements of `smoothings` should be between 0.0 and 1.0.'
+            smoothings = [smoothings] * n_task
+
+        self.smoothings = smoothings
+        criterions = [LabelSmoothingLoss(smoothing) for smoothing in smoothings]
+        super(MultiTaskLabelSmoothingLoss, self).__init__(criterions, tast_weights)
+
+
 if __name__ == "__main__":
     n_task = 2
+
+    # test MultiTaskCrossEntropy
     cross_entropy_loss = CrossEntropyLoss()
     multi_task_criterion = MultiTaskCrossEntropyLoss(n_task, task_weights=None)
 
@@ -156,6 +198,16 @@ if __name__ == "__main__":
     targets = [torch.empty(3, dtype=torch.long).random_(5) for _ in range(n_task)]
     
     print([cross_entropy_loss(input, target).item() for input, target in zip(inputs, targets)])
+
+    total_loss, losses = multi_task_criterion(inputs, targets)
+    print(total_loss.item())
+    print([loss.item() for loss in losses])
+
+    # test MultiTaskLabelSmoothingLoss
+    label_smoothing_loss = LabelSmoothingLoss(smoothing=0.1)
+    multi_task_criterion = MultiTaskLabelSmoothingLoss(n_task, tast_weights=None, smoothings=0.1)
+
+    print([label_smoothing_loss(input, target).item() for input, target in zip(inputs, targets)])
 
     total_loss, losses = multi_task_criterion(inputs, targets)
     print(total_loss.item())

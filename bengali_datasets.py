@@ -15,16 +15,14 @@ class GraphemeDataset(Dataset):
         self.transform = transform
         self.TTA = TTA
 
-        size = math.sqrt(df_image.iloc[0][1:].values.size())
-        assert int(size) == size
-        self.size = size
+        self.size = (137, 236)
         
     def __len__(self):
         return len(self.df_image)
     
     def __getitem__(self, idx):
         if self.mode == 'train':
-            image = self.df_image.iloc[idx][1:].values.reshape(self.size, self.size).astype(np.uint8)
+            image = self.df_image.iloc[idx][1:].values.reshape(*self.size).astype(np.uint8)
 
             label1 = self.df_label.grapheme_root.values[idx]
             label2 = self.df_label.vowel_diacritic.values[idx]
@@ -36,10 +34,21 @@ class GraphemeDataset(Dataset):
 
             return image, label1, label2, label3
         else:
-            image = self.df_image.iloc[idx][1:].values.reshape(self.size, self.size).astype(np.uint8)
+            image = self.df_image.iloc[idx][1:].values.reshape(*self.size).astype(np.uint8)
 
             if self.TTA and self.transform:
                 augment = self.transform(image=image)
                 image = augment['image']
             
             return image
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from bengali_utils import load_images
+
+    df_images = load_images(mode='test')
+    dataset = GraphemeDataset(df_images, mode='test', TTA=False)
+    img = dataset[0]
+    plt.imshow(img)
+    plt.show()

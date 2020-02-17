@@ -1,5 +1,18 @@
 import numpy as np
+import pandas as pd
 from sklearn.metrics import recall_score
+
+
+def load_images(mode):
+    # assert mode in ['train', 'test'],
+    assert mode == 'test'
+
+    if mode == 'train':
+        df = pd.read_feather('small_data/train_image_data_0.feather')
+    else:
+        df = pd.read_feather('small_data/test_image_data_0.feather')
+
+    return df
 
 
 def multi_task_macro_recall(true_graphemes: np.array, pred_graphemes: np.array,

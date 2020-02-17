@@ -70,4 +70,4 @@ $ tensorboard --logdir=lightning_logs/version_x
 * Metric Learning (?)
 
 ## Key points
-    * grapheme recall dominates
+* grapheme recall dominates

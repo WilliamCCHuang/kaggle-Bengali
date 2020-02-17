@@ -36,9 +36,10 @@ $ tensorboard --logdir=lightning_logs/version_x
     - [ ] OneCycle
 * Loss functions
     - [x] TopkCrossEntropyLoss
-    - [x] Weighted multi-task cross entropy (reported better than the others in discussion)
+    - [x] Multi-task cross entropy (reported better than the others in discussion)
+    - [x] Label Smoothing Regularization
+    - [x] Multi-task label smoothing loss
     - [ ] Focal loss
-    - [ ] Label Smoothing Regularization
 * Cross Validation
     - [ ] 5 folds (need to check the distribution of classes)
 * Adversarial Training

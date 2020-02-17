@@ -37,7 +37,7 @@ $ tensorboard --logdir=lightning_logs/version_x
 * Loss functions
     - [x] TopkCrossEntropyLoss
     - [x] Multi-task cross entropy (reported better than the others in discussion)
-    - [x] Label Smoothing Regularization
+    - [x] Label smoothing loss
     - [x] Multi-task label smoothing loss
     - [ ] Focal loss
 * Cross Validation

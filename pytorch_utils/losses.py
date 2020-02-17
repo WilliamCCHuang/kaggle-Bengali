@@ -108,8 +108,8 @@ class FocalLoss(nn.Module):
 
 class MultiTaskLoss(nn.Module):
     """
-    total_loss = task_weights[0] * criterions[0](inputs[0], targets[0]) + ... +
-                 task_weights[-1] * criterions[-1](inputs[-1], targets[-1])
+    total_loss = task_weights[0] * criterions[0](inputs, targets[0]) + ... +
+                 task_weights[-1] * criterions[-1](inputs, targets[-1])
     
     Arguments:
         criterions {list} -- list of criterions
@@ -149,8 +149,8 @@ class MultiTaskLoss(nn.Module):
 
 class MultiTaskCrossEntropyLoss(MultiTaskLoss):
     """
-    total_loss = task_weights[0] * CrossEntropy(inputs[0], targets[0]) + ... +
-                 task_weights[-1] * CrossEntropy(inputs[-1], targets[-1])
+    total_loss = task_weights[0] * CrossEntropy(inputs, targets[0]) + ... +
+                 task_weights[-1] * CrossEntropy(inputs, targets[-1])
 
     Returns:
         total_loss {torch.Tensor} -- sum of all losses of each task
@@ -165,8 +165,8 @@ class MultiTaskCrossEntropyLoss(MultiTaskLoss):
 
 class MultiTaskLabelSmoothingLoss(MultiTaskLoss):
     """
-    total_loss = task_weights[0] * LabelSmoothingLoss(inputs[0], targets[0]) + ... +
-                 task_weights[-1] * LabelSmoothingLoss(inputs[-1], targets[-1])
+    total_loss = task_weights[0] * LabelSmoothingLoss(inputs, targets[0]) + ... +
+                 task_weights[-1] * LabelSmoothingLoss(inputs, targets[-1])
 
     Returns:
         total_loss {torch.Tensor} -- sum of all losses of each task

@@ -49,11 +49,11 @@ class TopkCrossEntropyLoss(_WeightedLoss):
             return loss.mean()
 
 
-class LabelSmoothingLoss(nn.Module):
+class LabelSmoothingCrossEntropyLoss(nn.Module):
 
     def __init__(self, smoothing=0.0):
         assert 0 <= smoothing <=1
-        super(LabelSmoothingLoss, self).__init__()
+        super(LabelSmoothingCrossEntropyLoss, self).__init__()
 
         self.smoothing = smoothing
 
@@ -163,7 +163,7 @@ class MultiTaskCrossEntropyLoss(MultiTaskLoss):
         super(MultiTaskCrossEntropyLoss, self).__init__(criterions, task_weights)
 
 
-class MultiTaskLabelSmoothingLoss(MultiTaskLoss):
+class MultiTaskLabelSmoothingCrossEntropyLoss(MultiTaskLoss):
     """
     total_loss = task_weights[0] * LabelSmoothingLoss(inputs, targets[0]) + ... +
                  task_weights[-1] * LabelSmoothingLoss(inputs, targets[-1])
@@ -181,8 +181,8 @@ class MultiTaskLabelSmoothingLoss(MultiTaskLoss):
             smoothings = [smoothings] * n_task
 
         self.smoothings = smoothings
-        criterions = [LabelSmoothingLoss(smoothing) for smoothing in smoothings]
-        super(MultiTaskLabelSmoothingLoss, self).__init__(criterions, tast_weights)
+        criterions = [LabelSmoothingCrossEntropyLoss(smoothing) for smoothing in smoothings]
+        super(MultiTaskLabelSmoothingCrossEntropyLoss, self).__init__(criterions, tast_weights)
 
 
 if __name__ == "__main__":
@@ -204,8 +204,8 @@ if __name__ == "__main__":
     print([loss.item() for loss in losses])
 
     # test MultiTaskLabelSmoothingLoss
-    label_smoothing_loss = LabelSmoothingLoss(smoothing=0.1)
-    multi_task_criterion = MultiTaskLabelSmoothingLoss(n_task, tast_weights=None, smoothings=0.1)
+    label_smoothing_loss = LabelSmoothingCrossEntropyLoss(smoothing=0.1)
+    multi_task_criterion = MultiTaskLabelSmoothingCrossEntropyLoss(n_task, tast_weights=None, smoothings=0.1)
 
     print([label_smoothing_loss(input, target).item() for input, target in zip(inputs, targets)])
 

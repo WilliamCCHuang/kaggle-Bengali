@@ -11,10 +11,10 @@ $ python test.py
 Once the training is completed, see the `lightning_logs` to check losses do get smaller
 
 ```
-$ tensorboard --logdir=lightning_logs/version_x
+$ tensorboard --logdir=lightning_logs/version_{x}
 ```
 
-, where `version_x` is the latest version.
+, where `{x}` is a number and indicates the latest version.
 
 ## TODO
 
@@ -35,10 +35,10 @@ $ tensorboard --logdir=lightning_logs/version_x
     - [ ] ReduceOnPlateau (reported better than OneCycle in discussion)
     - [ ] OneCycle
 * Loss functions
-    - [x] TopkCrossEntropyLoss
-    - [x] Multi-task cross entropy (reported better than the others in discussion)
-    - [x] Label smoothing loss
-    - [x] Multi-task label smoothing loss
+    - [x] Top k cross entropy loss
+    - [x] Multi-task cross entropy loss (reported better than the others in discussion)
+    - [x] Label smoothing cross entropy loss
+    - [x] Multi-task label smoothing cross entropy loss
     - [ ] Focal loss
 * Cross Validation
     - [ ] 5 folds (need to check the distribution of classes)

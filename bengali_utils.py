@@ -14,13 +14,20 @@ def create_dirs(file_path):
 def load_images(mode):
     # TODO: concatenate all feather files
     
-    # assert mode in ['train', 'test'],
-    assert mode == 'test'
+    assert mode in ['train', 'test']
+
+    df_list = []
 
     if mode == 'train':
-        df = pd.read_feather('small_data/train_image_data_0.feather')
+        for i in range(4):
+            df = pd.read_feather(f'data/origin/train_image_data_{i}.feather')
+            df_list.append(df)
     else:
-        df = pd.read_feather('small_data/test_image_data_0.feather')
+        for i in range(4):
+            df = pd.read_feather(f'data/origin/test_image_data_{i}.feather')
+            df_list.append(df)
+    
+    df = pd.concat(df_list)
 
     return df
 

@@ -21,6 +21,8 @@ def main(mode, size=128, file_path=None):
         img = resize(img, size)
         df_new.iloc[i, 1:] = img.reshape(-1)
 
+    df_new = df_new.reset_index().drop('index', axis=1)
+    
     if file_path:
         assert file_path.endswith('feather')
         create_dirs(file_path)
@@ -29,4 +31,4 @@ def main(mode, size=128, file_path=None):
 
 if __name__ == "__main__":
     main(mode='test', size=128,
-         file_path='data/128x128/test_image_0.feather')
+         file_path='data/128x128/test_images.feather')

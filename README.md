@@ -58,6 +58,7 @@ $ tensorboard --logdir=lightning_logs/version_{x}
         - [ ] add random image with uniform labels
         - [ ] add digital, english, japanese, even mandarin letters with uniform labels
         - [ ] generate fake Bengali graphemes consist grapheme root, vowel diacritics, and consonant diacritics selected randomly
+    - [ ] use [feather dataset](https://www.kaggle.com/corochann/bengaliaicv19feather)
     - [ ] add [Ekush dataset](https://www.kaggle.com/shahariar/ekush)
     - [ ] removing confusing images
 * Test-time augmentation (TTA)

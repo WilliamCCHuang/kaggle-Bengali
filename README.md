@@ -11,7 +11,7 @@ $ python test.py
 Once the training is completed, see the `lightning_logs` to check losses do get smaller
 
 ```
-$ tensorboard --logdir=lightning_logs/version_{x}
+$ tensorboard --logdir=lightning_logs/version_x
 ```
 
 , where `{x}` is a number and indicates the latest version.

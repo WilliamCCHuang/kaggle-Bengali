@@ -199,3 +199,4 @@ if __name__ == "__main__":
             raise RuntimeError(logs.format(model_name, 'output_y_64x64', output_y_64x64.size()))
         if list(output_z_64x64.size()) != [1, 7]:
             raise RuntimeError(logs.format(model_name, 'output_z_64x64', output_z_64x64.size()))
+

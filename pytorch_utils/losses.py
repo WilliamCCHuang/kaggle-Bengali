@@ -212,3 +212,4 @@ if __name__ == "__main__":
     total_loss, losses = multi_task_criterion(inputs, targets)
     print(total_loss.item())
     print([loss.item() for loss in losses])
+    

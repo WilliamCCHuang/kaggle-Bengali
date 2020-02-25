@@ -48,4 +48,21 @@ class MultiTaskBaseModel(pl.LightningModule):
             }
         } # data for tensorboard can be a python number, np.array, or torch.tensor
 
+        lr_dict = self.get_lr()
+        tensorboard_logs.update(lr_dict)
+
         return {'loss': total_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
+
+    def get_lr(self):
+        lr_dict = {}
+
+        if hasattr(self, 'scheduler'):
+            lrs = self.scheduler.get_last_lr() # list
+
+            if len(lrs) == 1:
+                lr_dict['lr'] = lrs[0]
+            else:
+                for i, lr in enumerate(lrs):
+                    lr_dict[f'lr_{i}'] = lr
+
+        return lr_dict

@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 
 
 class GraphemeTrainDataset(Dataset):
+
     def __init__(self, df_images, df_labels=None, transform=None):
         super(GraphemeTrainDataset, self).__init__()
 
@@ -31,6 +32,7 @@ class GraphemeTrainDataset(Dataset):
 
 
 class GraphemeTestDataset(Dataset):
+    
     def __init__(self, df_images, transform=None, TTA=False):
         super(GraphemeTestDataset, self).__init__()
 

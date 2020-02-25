@@ -4,10 +4,10 @@ import numpy as np
 from torch.utils.data import Dataset
 
 
-class GraphemeTrainDataset(Dataset):
+class BengaliTrainDataset(Dataset):
 
     def __init__(self, df_images, df_labels=None, transform=None):
-        super(GraphemeTrainDataset, self).__init__()
+        super(BengaliTrainDataset, self).__init__()
 
         self.df_image = df_images
         self.df_label = df_labels
@@ -31,10 +31,10 @@ class GraphemeTrainDataset(Dataset):
         return image, label1, label2, label3
 
 
-class GraphemeTestDataset(Dataset):
+class BengaliTestDataset(Dataset):
     
     def __init__(self, df_images, transform=None, TTA=False):
-        super(GraphemeTestDataset, self).__init__()
+        super(BengaliTestDataset, self).__init__()
 
         self.TTA = TTA
         self.df_images = df_images
@@ -61,10 +61,10 @@ class GraphemeTestDataset(Dataset):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    from bengali_utils import load_images
+    from utils import load_images
 
     df_images = load_images(mode='test')
-    dataset = GraphemeTestDataset(df_images, TTA=False)
+    dataset = BengaliTestDataset(df_images, TTA=False)
     img = dataset[0]
     plt.imshow(img)
     plt.show()

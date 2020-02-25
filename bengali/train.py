@@ -30,12 +30,17 @@ def main():
     criterions = MultiTaskCrossEntropyLoss(n_task=3)
     base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', hidden_dim=128, dropout=0.5)
     optimizer = RAdam(base_cnn_model.parameters(), lr=1e-3, weight_decay=1e-4)
+
     model = BengaliModel(model=base_cnn_model,
                          train_dataloader=train_dataloader,
                          val_dataloader=val_dataloader,
                          criterions=criterions,
                          optimizer=optimizer)
-    trainer = pl.Trainer(max_epochs=100, early_stop_callback=False, gpus=1, checkpoint_callback=None) # TODO: checkpoint
+    
+    trainer = pl.Trainer(max_epochs=100,
+                         gpus=1,
+                         early_stop_callback=False,
+                         checkpoint_callback=None) # TODO: checkpoint
     trainer.fit(model)
 
 

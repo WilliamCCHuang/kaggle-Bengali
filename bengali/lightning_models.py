@@ -3,19 +3,19 @@ import numpy as np
 import torch
 import pytorch_lightning as pl
 
-from bengali_metrics import multi_task_macro_recall
-from pytorch_lightning_utils.multi_task_models import MultiTaskBaseModel
+from metrics import multi_task_macro_recall
+from pytorch_lightning_utils.multi_task_models import MultiTaskLightningModel
 
 
-class BengaliModel(MultiTaskBaseModel):
+class BengaliLightningModel(MultiTaskLightningModel):
 
     def __init__(self, model, train_dataloader, val_dataloader,
                  criterions, optimizer, scheduler=None):
-        super(BengaliModel, self).__init__(model, criterions)
+        super(BengaliLightningModel, self).__init__(model, criterions)
         self._train_dataloader = train_dataloader # add _ in the head in order not to conflict
         self._val_dataloader = val_dataloader # add _ in the head in order not to conflict
         self.optimizer = optimizer
-        self.scheduler = scheduler # modify `MultiTaskBaseModel.get_lr()` if change name of self.scheduler
+        self.scheduler = scheduler # modify `MultiTaskLightningModel.get_lr()` if change name of self.scheduler
 
     def validation_step(self, batch, batch_idx):
         # print(f'batch index: {batch_idx}')

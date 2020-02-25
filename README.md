@@ -40,16 +40,18 @@ $ tensorboard --logdir=lightning_logs/version_{x}
     - [x] Label smoothing cross entropy loss
     - [x] Multi-task label smoothing cross entropy loss
     - [ ] Focal loss
+* Activation functions
+    - [ ] Mish
 * Cross Validation
     - [ ] 5 folds (need to check the distribution of classes)
 * Adversarial Training
     - [ ] optional
 * Image Augmentations
-    - [ ] cutout
+    - [ ] [cutout](https://www.kaggle.com/corochann/bengali-albumentations-data-augmentation-tutorial)
     - [ ] mixup
     - [ ] cutmix
     - [ ] augmix
-    - [ ] cutmix + mixup
+    - [ ] cutmix
 * Data
     - [ ] different input size
     - [ ] [progressive resizing](https://towardsdatascience.com/boost-your-cnn-image-classifier-performance-with-progressive-resizing-in-keras-a7d96da06e20) (*optional*)

@@ -66,3 +66,4 @@ if __name__ == "__main__":
     import inspect
     test = nn.Module()
     print(str(test))
+    

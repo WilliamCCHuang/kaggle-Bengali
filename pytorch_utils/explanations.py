@@ -124,3 +124,4 @@ class GradCAM:
                 
         if save_path:
             plt.savefig(save_path)
+            

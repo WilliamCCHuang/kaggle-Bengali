@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import pytorch_lightning as pl
 
-from kaggle_utils import multi_task_macro_recall
+from bengali_metrics import multi_task_macro_recall
 from pytorch_lightning_utils.multi_task_models import MultiTaskBaseModel
 
 

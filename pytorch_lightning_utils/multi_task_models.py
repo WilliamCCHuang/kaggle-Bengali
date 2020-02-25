@@ -3,7 +3,7 @@ import numpy as np
 import pytorch_lightning as pl
 
 
-class MultiTaskBaseModel(pl.LightningModule):
+class MultiTaskLightningModel(pl.LightningModule):
     """
     Need to be inherited and implement the following methods
     * validation_step (optional)
@@ -21,7 +21,7 @@ class MultiTaskBaseModel(pl.LightningModule):
         criterions {list} -- list of criterions for each task
     """
     def __init__(self, model, criterions):
-        super(MultiTaskBaseModel, self).__init__()
+        super(MultiTaskLightningModel, self).__init__()
         self.model = model
         self.criterions = criterions
 

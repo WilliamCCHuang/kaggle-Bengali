@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -53,13 +54,15 @@ def main():
     val_dataloader = DataLoader(TestDataset(), batch_size=5, shuffle=False)
 
     base_model = BaseModel()
+    optimizer = optim.Adam(base_model.parameters())
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: np.sin(epoch))
     model = BengaliModel(base_model, train_dataloader, val_dataloader,
-                         MultiTaskCrossEntropyLoss(n_task=3), optim.Adam(base_model.parameters()))
+                         MultiTaskCrossEntropyLoss(n_task=3), optimizer, scheduler)
 
     trainer = pl.Trainer(max_epochs=20, early_stop_callback=False) # for cpu
     # trainer = pl.Trainer(max_epochs=20, early_stop_callback=False, gpus=1) # for gpu
     trainer.fit(model)
-    
+
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from torch.nn.modules.loss import _Loss, _WeightedLoss, CrossEntropyLoss
+from torch.nn.modules.loss import _WeightedLoss, CrossEntropyLoss
 
 
 __all__ = [
@@ -90,7 +90,7 @@ class FocalLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, input, target):
-        ce_loss = F.cross_entropy(input, target, reduction=self.reduction=)
+        ce_loss = F.cross_entropy(input, target, reduction=self.reduction)
         pt = torch.exp(-ce_loss)
         focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
 

@@ -91,10 +91,10 @@ class BengaliModel(MultiTaskBaseModel):
             **{
                 f'val_loss_{i+1}': loss for i, loss in enumerate([val_loss_1, val_loss_2, val_loss_3])
             },
-            'total_recall': total_recall,
-            'graphemes_recall': recalls[0],
-            'vowels_recall': recalls[1],
-            'consonants_recall': recalls[2]
+            'val_total_recall': total_recall,
+            'val_graphemes_recall': recalls[0],
+            'val_vowels_recall': recalls[1],
+            'val_consonants_recall': recalls[2]
         } # data for tensorboard can be a python number, np.array, or torch.tensor
 
         return {'log': tensorboard_logs, 'progress_bar': tensorboard_logs}

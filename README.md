@@ -14,7 +14,7 @@ Once the training is completed, see the `lightning_logs` to check losses do get 
 $ tensorboard --logdir=lightning_logs/version_x
 ```
 
-, where `{x}` is a number and indicates the latest version.
+, where `x` is a number and indicates the latest version.
 
 ## TODO
 
@@ -32,14 +32,14 @@ $ tensorboard --logdir=lightning_logs/version_x
     - [x] RAdam (reported the same with Adam)
     - [ ] Look-ahead
 * Scheduler
-    - [ ] ReduceOnPlateau (reported better than OneCycle in discussion)
-    - [ ] OneCycle
+    - [x] ReduceOnPlateau (reported better than OneCycle in discussion)
+    - [x] OneCycle
 * Loss functions
     - [x] Top k cross entropy loss
     - [x] Multi-task cross entropy loss (reported better than the others in discussion)
     - [x] Label smoothing cross entropy loss
     - [x] Multi-task label smoothing cross entropy loss
-    - [ ] Focal loss
+    - [x] Focal loss
 * Activation functions
     - [ ] Mish
 * Cross Validation
@@ -47,7 +47,7 @@ $ tensorboard --logdir=lightning_logs/version_x
 * Adversarial Training
     - [ ] optional
 * Image Augmentations
-    - [ ] [cutout](https://www.kaggle.com/corochann/bengali-albumentations-data-augmentation-tutorial)
+    - [x] [cutout](https://www.kaggle.com/corochann/bengali-albumentations-data-augmentation-tutorial)
     - [ ] mixup
     - [ ] cutmix
     - [ ] augmix

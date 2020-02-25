@@ -15,7 +15,7 @@ class BengaliModel(MultiTaskBaseModel):
         self._train_dataloader = train_dataloader # add _ in the head in order not to conflict
         self._val_dataloader = val_dataloader # add _ in the head in order not to conflict
         self.optimizer = optimizer
-        self.scheduler = scheduler
+        self.scheduler = scheduler # modify `MultiTaskBaseModel.get_lr()` if change name of self.scheduler
 
     def validation_step(self, batch, batch_idx):
         # print(f'batch index: {batch_idx}')
@@ -87,7 +87,7 @@ class BengaliModel(MultiTaskBaseModel):
         # print(f'total_recall: {total_recall}, recall_1: {recalls[0]}, recall_2: {recalls[1]}, recall_3: {recalls[2]}')
 
         tensorboard_logs = {
-            'total_val_loss': total_val_loss,
+            'val_total_loss': total_val_loss,
             **{
                 f'val_loss_{i+1}': loss for i, loss in enumerate([val_loss_1, val_loss_2, val_loss_3])
             },

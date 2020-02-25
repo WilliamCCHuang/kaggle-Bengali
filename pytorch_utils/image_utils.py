@@ -25,3 +25,4 @@ def image_to_tensor(img: PIL.Image.Image) -> torch.tensor:
 if __name__ == "__main__":
     img = load_image('transformer.jpeg')
     print(type(img))
+    

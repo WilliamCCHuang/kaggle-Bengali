@@ -20,13 +20,13 @@ class MultiTaskLightningModel(pl.LightningModule):
         hparams {} -- hyper-parameters
         criterions {list} -- list of criterions for each task
     """
-    def __init__(self, model, criterions):
+    def __init__(self, base_model, criterions):
         super(MultiTaskLightningModel, self).__init__()
-        self.model = model
+        self.base_model = base_model
         self.criterions = criterions
 
     def forward(self, inputs):
-        outputs = self.model(inputs) # outputs: list
+        outputs = self.base_model(inputs) # outputs: list
 
         return outputs
 

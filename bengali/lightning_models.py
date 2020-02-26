@@ -1,3 +1,7 @@
+import os
+os.sys.path.append('/Users/william/Documents/kaggle/kaggle-Bengali')
+# print(os.sys.path)
+
 import numpy as np
 
 import torch

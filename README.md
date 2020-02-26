@@ -30,7 +30,7 @@ $ tensorboard --logdir=lightning_logs/version_x
 * Optimizers
     - [x] Adam
     - [x] RAdam (reported the same with Adam)
-    - [ ] Look-ahead
+    - [x] Look-ahead
 * Scheduler
     - [x] ReduceOnPlateau (reported better than OneCycle in discussion)
     - [x] OneCycle

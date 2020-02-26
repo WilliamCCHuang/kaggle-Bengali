@@ -206,11 +206,13 @@ class PlainRAdam(Optimizer):
         
 class LookAhead(Optimizer):
     def __init__(self, optimizer, step, alpha):
+        assert(step >= 1)
+        assert( 0.0 <= alpha <= 1.0)
+
         self.optimizer = optimizer
         self.step = step
+        self.step_k = 0
         self.alpha = alpha
         self.param_groups = self.optimizer.param_groups
         self.state = defaultdict(dict)
-        self.fast_state = self.optimizer.state
-        for group in self.param_groups:
-            group['counter'] = 0
+        self.slow_weights = [[param.clone().detach() for param in group['params']] for group in self.param_groups]

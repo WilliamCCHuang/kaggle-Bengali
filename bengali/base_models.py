@@ -24,29 +24,29 @@ class BaseCNNModel(nn.Module):
 
         # out_channels are different in different models
         if model_name.startswith('efficientnet'):
-            self.cnn = EfficientNet.from_name(model_name)
-            out_channels = self.cnn._conv_stem.out_channels # get original out_channels
+            self.cnn_model = EfficientNet.from_name(model_name)
+            out_channels = self.cnn_model._conv_stem.out_channels # get original out_channels
             # print(out_channels)
-            self.cnn._conv_stem = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
-            dim_feats= self.cnn._fc.in_features
+            self.cnn_model._conv_stem = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+            dim_feats= self.cnn_model._fc.in_features
         else:
-            self.cnn = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained=None)
+            self.cnn_model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained=None)
             if model_name.startswith('resnet'):
-                out_channels = self.cnn.conv1.out_channels # get original out_channels
+                out_channels = self.cnn_model.conv1.out_channels # get original out_channels
                 # print(out_channels)
-                self.cnn.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+                self.cnn_model.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             elif model_name.startswith('densenet'):
-                out_channels = self.cnn.features.conv0.out_channels # get original out_channels
+                out_channels = self.cnn_model.features.conv0.out_channels # get original out_channels
                 # print(out_channels)
-                self.cnn.features.conv0 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+                self.cnn_model.features.conv0 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             elif model_name.startswith('se_resnet'):
-                out_channels = self.cnn.layer0.conv1.out_channels # get original out_channels
+                out_channels = self.cnn_model.layer0.conv1.out_channels # get original out_channels
                 # print(out_channels)
-                self.cnn.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+                self.cnn_model.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             elif model_name.startswith('se_resnext'):
-                out_channels = self.cnn.layer0.conv1.out_channels
-                self.cnn.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
-            dim_feats = self.cnn.last_linear.in_features  
+                out_channels = self.cnn_model.layer0.conv1.out_channels
+                self.cnn_model.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
+            dim_feats = self.cnn_model.last_linear.in_features  
         
         self.linear_x_1 = nn.Linear(dim_feats, hidden_dim)
         self.linear_x_2 = nn.Linear(hidden_dim, 168)
@@ -58,15 +58,15 @@ class BaseCNNModel(nn.Module):
         self.dropout = nn.Dropout(p=dropout) if dropout else None
         self.pool = nn.AdaptiveAvgPool2d((1,1))
     
-    def features(self, input):
+    def features(self, inputs):
         if self.model_name.startswith('efficientnet'):
-            return self.cnn.extract_features(input)
+            return self.cnn_model.extract_features(inputs)
         else:
-            return self.cnn.features(input)
+            return self.cnn_model.features(inputs)
 
-    def _logits(self, input, linear_1, linear_2):
+    def _logits(self, inputs, linear_1, linear_2):
         if self.model_name.startswith('efficientnet'):
-            output = self.pool(input)
+            output = self.pool(inputs)
 
             if not self.dropout:
                 output = self.dropout(output)
@@ -81,7 +81,7 @@ class BaseCNNModel(nn.Module):
             output = linear_2(output)
 
         elif self.model_name.startswith('resnet'):
-            output = self.pool(input)
+            output = self.pool(inputs)
             output = output.view(output.size(0), -1)
             output = linear_1(output)
             output = F.relu(output)
@@ -92,7 +92,7 @@ class BaseCNNModel(nn.Module):
             output = linear_2(output)
             
         elif self.model_name.startswith('densenet'):
-            output = F.relu(input, inplace = True)
+            output = F.relu(inputs, inplace = True)
             output = self.pool(output)
             output = output.view(output.size(0), -1)
             output = linear_1(output)
@@ -104,7 +104,7 @@ class BaseCNNModel(nn.Module):
             output = linear_2(output)
             
         elif self.model_name.startswith('se_resnet'):
-            output = self.pool(input)
+            output = self.pool(inputs)
 
             if not self.dropout:
               output = self.dropout(output)
@@ -119,7 +119,7 @@ class BaseCNNModel(nn.Module):
             output = linear_2(output)
 
         elif self.model_name.startswith('se_resnext'):
-            output = self.pool(input)
+            output = self.pool(inputs)
 
             if not self.dropout:
               output = self.dropout(output)
@@ -135,17 +135,17 @@ class BaseCNNModel(nn.Module):
         
         return output
             
-    def logits_x(self, input):
-        return self._logits(input, self.linear_x_1, self.linear_x_2)
+    def logits_x(self, inputs):
+        return self._logits(inputs, self.linear_x_1, self.linear_x_2)
 
-    def logits_y(self, input):
-        return self._logits(input, self.linear_y_1, self.linear_y_2)
+    def logits_y(self, inputs):
+        return self._logits(inputs, self.linear_y_1, self.linear_y_2)
 
-    def logits_z(self, input):
-        return self._logits(input, self.linear_z_1, self.linear_z_2)
+    def logits_z(self, inputs):
+        return self._logits(inputs, self.linear_z_1, self.linear_z_2)
 
-    def forward(self, input):
-        output = self.features(input)
+    def forward(self, inputs):
+        output = self.features(inputs)
         output_x = self.logits_x(output)
         output_y = self.logits_y(output)
         output_z = self.logits_z(output)

@@ -1,7 +1,9 @@
 import math
 import torch
 from torch.optim import Optimizer
-
+from collections import defaultdict
+from itertools import chain
+import warnings
 
 class RAdam(Optimizer):
     """
@@ -202,3 +204,13 @@ class PlainRAdam(Optimizer):
 
         return loss
         
+class LookAhead(Optimizer):
+    def __init__(self, optimizer, step, alpha):
+        self.optimizer = optimizer
+        self.step = step
+        self.alpha = alpha
+        self.param_groups = self.optimizer.param_groups
+        self.state = defaultdict(dict)
+        self.fast_state = self.optimizer.state
+        for group in self.param_groups:
+            group['counter'] = 0

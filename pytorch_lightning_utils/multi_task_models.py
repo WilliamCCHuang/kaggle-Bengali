@@ -33,10 +33,6 @@ class MultiTaskLightningModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x_train, y_trains = batch  # x_train: torch.tensor, y_trains: list of torch.tensors
 
-        # print('train:', batch_idx)
-        # print('data:', x_train.device)
-        # print('model:', next(self.model.parameters()).device)
-
         y_preds = self.forward(x_train) # y_preds: list of torch.tensors
 
         total_loss, losses = self.criterions(y_preds, y_trains) # train loss should be a torch.tensor

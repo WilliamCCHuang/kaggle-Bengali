@@ -26,22 +26,18 @@ class BaseCNNModel(nn.Module):
         if model_name.startswith('efficientnet'):
             self.cnn_model = EfficientNet.from_name(model_name)
             out_channels = self.cnn_model._conv_stem.out_channels # get original out_channels
-            # print(out_channels)
             self.cnn_model._conv_stem = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             dim_feats= self.cnn_model._fc.in_features
         else:
             self.cnn_model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained=None)
             if model_name.startswith('resnet'):
                 out_channels = self.cnn_model.conv1.out_channels # get original out_channels
-                # print(out_channels)
                 self.cnn_model.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             elif model_name.startswith('densenet'):
                 out_channels = self.cnn_model.features.conv0.out_channels # get original out_channels
-                # print(out_channels)
                 self.cnn_model.features.conv0 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             elif model_name.startswith('se_resnet'):
                 out_channels = self.cnn_model.layer0.conv1.out_channels # get original out_channels
-                # print(out_channels)
                 self.cnn_model.layer0.conv1 = nn.Conv2d(1, out_channels, 3, stride=1, padding=0)
             elif model_name.startswith('se_resnext'):
                 out_channels = self.cnn_model.layer0.conv1.out_channels

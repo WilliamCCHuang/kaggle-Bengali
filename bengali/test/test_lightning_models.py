@@ -1,4 +1,6 @@
 import os
+os.sys.path.append('/Users/william/Documents/AI/github/kaggle-Bengali/bengali')
+
 import numpy as np
 
 import torch
@@ -9,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.datasets import MNIST
 import torchvision.transforms as transforms
 
-from bengali_models import BengaliModel
+from lightning_models import BengaliLightningModel
 from pytorch_utils.losses import MultiTaskCrossEntropyLoss
 
 import pytorch_lightning as pl
@@ -22,7 +24,7 @@ class TestDataset(Dataset):
         self.ref_dataset = MNIST(os.getcwd(), train=True, download=True, transform=transforms.ToTensor())
 
     def __len__(self):
-        return 10
+        return 20
 
     def __getitem__(self, index):
         x, y = self.ref_dataset[index % 10]
@@ -55,12 +57,15 @@ def main():
 
     base_model = BaseModel()
     optimizer = optim.Adam(base_model.parameters())
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: np.sin(epoch))
-    model = BengaliModel(base_model, train_dataloader, val_dataloader,
-                         MultiTaskCrossEntropyLoss(n_task=3), optimizer, scheduler)
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
+    model = BengaliLightningModel(base_model, train_dataloader, val_dataloader,
+                                  MultiTaskCrossEntropyLoss(n_task=3), optimizer, scheduler)
 
-    trainer = pl.Trainer(max_epochs=20, early_stop_callback=False) # for cpu
-    # trainer = pl.Trainer(max_epochs=20, early_stop_callback=False, gpus=1) # for gpu
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(filepath='models/trial_1', monitor='val_total_loss',
+                                                       verbose=1, mode='min')
+    trainer = pl.Trainer(max_epochs=5, early_stop_callback=False, checkpoint_callback=checkpoint_callback) # for cpu
+    # trainer = pl.Trainer(max_epochs=20, early_stop_callback=False, checkpoint_callback=checkpoint_callback, gpus=1) # for gpu
+    
     trainer.fit(model)
 
 

@@ -1,6 +1,5 @@
 import os
-os.sys.path.append('/Users/william/Documents/kaggle/kaggle-Bengali')
-# print(os.sys.path)
+os.sys.path.append('/Users/william/Documents/AI/github/kaggle-Bengali')
 
 import numpy as np
 

@@ -208,7 +208,7 @@ class LookAhead(Optimizer):
         #tensor.detach() creates a tensor that shares storage with tensor that does not require grad. 
         #tensor.clone()creates a copy of tensor that imitates the original tensor's requires_grad field.
 
-    def step_k(self, closure = None):
+    def step_k(self, closure=None):
         loss = self.optimizer.step(closure)
         self.step_cnt += 1
         if self.step_cnt >= self.step_k:

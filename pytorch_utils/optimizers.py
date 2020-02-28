@@ -2,26 +2,13 @@ import math
 import torch
 from torch.optim import Optimizer
 from collections import defaultdict
-from itertools import chain
-import warnings
+
 
 class RAdam(Optimizer):
     """
     https://github.com/LiyuanLucasLiu/RAdam/blob/master/radam/radam.py#L5
-    
-    Arguments:
-        Optimizer {[type]} -- [description]
-    
-    Raises:
-        ValueError: [description]
-        ValueError: [description]
-        ValueError: [description]
-        ValueError: [description]
-        RuntimeError: [description]
-    
-    Returns:
-        [type] -- [description]
     """
+
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, degenerated_to_sgd=True):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -203,8 +190,10 @@ class PlainRAdam(Optimizer):
                     p.data.copy_(p_data_fp32)
 
         return loss
-        
+
+
 class LookAhead(Optimizer):
+
     def __init__(self, optimizer, step_k, alpha):
         assert(step_k >= 1)
         assert( 0.0 <= alpha <= 1.0)
@@ -228,4 +217,5 @@ class LookAhead(Optimizer):
                     weight.data.add_(self.alpha, (param.data - weight.data))
                     param.data.copy_(weight.data)
             self.step_cnt = 0
+            
         return loss

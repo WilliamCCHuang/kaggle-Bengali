@@ -52,7 +52,38 @@ def cutout(img: torch.Tensor, n_holes, length) -> torch.Tensor:
         raise RuntimeError('Image has wrong shape')
 
     return img
+
+def mixup(img: torch.Tensor, lab, alpha = 1.0) -> torch.Tensor:
+    """
+    Input x = (batchsize, channel, H, W)
+    Output order:
+    mixed images, mixed labels
+    """
+    img_copy   = img.clone().detach()
+    lab_copy   = lab.clone().detach()
+    lam        = np.random.beta(alpha, alpha)
+    batch_size = img.size(0)
     
+    if img.dim() == 4:
+        for i in range(batch_size):
+            rand_index = int(np.random.randint(batch_size, size = 1))
+            if  i == rand_index:
+                mix_img_i   = lam * img[i, ...] + (1 - lam)* img[(rand_index+1)%batch_size, ...] 
+                mix_lab_i   = lam * lab[i, ...] + (1 - lam)* lab[(rand_index+1)%batch_size, ...]
+                img_copy[i, ...] =  mix_img_i
+                lab_copy[i, ...] =  mix_lab_i
+                
+            else:
+                mix_img_i   = lam * img[i, ...] + (1 - lam)* img[(rand_index+1), ...] 
+                mix_lab_i   = lam * lab[i, ...] + (1 - lam)* lab[(rand_index+1), ...]
+                img_copy[i, ...] =  mix_img_i
+                lab_copy[i, ...] =  mix_lab_i
+    else:
+        raise RuntimeError('Image has wrong shape, must with (B, C, H, W)')
+
+    return img_copy, lab_copy
+
+
 if __name__ == "__main__":
     img = load_image('transformer.jpeg')
     print(type(img))

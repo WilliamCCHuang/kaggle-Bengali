@@ -99,7 +99,7 @@ def cutmix(image: torch.Tensor, label: torch.Tensor, n_holes, length) -> torch.T
     label_ratio = length**2.0 / (h * w)
 
     for i in range(bz):
-        rand_index = int(np.random.randint(bz, size = 1))
+        rand_index = int(np.random.randint(bz, size=1))
         for _ in range(n_holes):
             x1, y1, x2, y2 = bbox(h, w, length)
 

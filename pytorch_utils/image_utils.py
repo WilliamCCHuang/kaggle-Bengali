@@ -85,6 +85,31 @@ def mixup(img: torch.Tensor, lab, alpha = 1.0) -> torch.Tensor:
 
     return img_copy, lab_copy
 
+def cutmix(img: torch.Tensor, lab: torch.Tensor, n_holes, length) -> torch.Tensor:
+    img_copy   = img.clone().detach()
+    lab_copy   = lab.clone().detach()
+    batch_size = img.size(0)
+    h, w       = list(img.size())[-2:]
+    lab_ratio  = length**2.0/(h*w)
+
+    if img.dim() == 4:
+        for i in range(batch_size):
+            rand_index = int(np.random.randint(batch_size, size = 1))
+
+            for n in range(n_holes):
+                x1, y1, x2, y2 = bbox(h, w, length)
+
+                if  i == rand_index:
+                    img_copy[i,:, y1:y2, x1:x2] = img[(rand_index+1)%batch_size, :, y1:y2, x1:x2]
+                    lab_copy[i, :] = lab[i, :] + lab_ratio * lab[(rand_index+1)%batch_size, :]
+                    
+                else:
+                    img_copy[i,:, y1:y2, x1:x2] = img[rand_index, :, y1:y2, x1:x2]
+                    lab_copy[i, :] = lab[i, :] + lab_ratio * lab[rand_index, :]
+    else:
+        raise RuntimeError('Input has wrong a shape, must with (B, C, H, W)')   
+    return  img_copy, lab_copy
+
 
 if __name__ == "__main__":
     img = load_image('transformer.jpeg')

@@ -7,21 +7,22 @@ import torch
 import torchvision.transforms as transforms
 
 
-def load_image(img_path: str, mode: str='RGB', size: Union[int, tuple, list]=None) -> Image.Image:
-    img = Image.open(img_path)
-    img = img.convert(mode=mode)
+def load_image(image_path: str, mode: str='RGB', size: Union[int, tuple, list]=None) -> Image.Image:
+    image = Image.open(image_path)
+    image = image.convert(mode=mode)
     
     if size is not None:
-        img = img.resize(size)
+        image = image.resize(size)
     
-    return img
+    return image
 
 
-def image_to_tensor(img: Image.Image) -> torch.tensor:
-    tensor = transforms.ToTensor()(img)
+def image_to_tensor(image: Image.Image) -> torch.tensor:
+    tensor = transforms.ToTensor()(image)
     tensor = torch.unsqueeze(tensor, dim=0)
     
     return tensor
+
 
 def bbox(h, w, length):
     y = np.random.randint(h)
@@ -34,81 +35,82 @@ def bbox(h, w, length):
 
     return x1, y1, x2, y2
 
-def cutout(img: torch.Tensor, n_holes: int, length: Union[int, float]) -> torch.Tensor:
-    img.requires_grad_(False)
+
+def cutout(image: torch.Tensor, n_holes: int, length: Union[int, float]) -> torch.Tensor:
+    image.requires_grad_(False)
     
-    h, w = list(img.size())[-2:]
+    h, w = list(image.size())[-2:]
     
-    if 2 <= img.dim() <= 3:
+    if 2 <= image.dim() <= 3:
         # 1 image
         for _ in range(n_holes):
             x1, y1, x2, y2 = bbox(h, w, length)
-            img[..., y1:y2, x1:x2] = 0.0
-    elif img.dim() == 4:
+            image[..., y1:y2, x1:x2] = 0.0
+    elif image.dim() == 4:
         # batch images
-        for i in range(img.size(0)):
+        for i in range(image.size(0)):
             for _ in range(n_holes):
                 x1, y1, x2, y2 = bbox(h, w, length)
-                img[i, :, y1:y2, x1:x2] = 0.0
+                image[i, :, y1:y2, x1:x2] = 0.0
     else:
         raise ValueError('Image has wrong shape')
 
-    return img
+    return image
 
-def mixup(img: torch.Tensor, lab, alpha = 1.0) -> torch.Tensor:
+
+def mixup(image: torch.Tensor, label, alpha=1.0) -> torch.Tensor:
     """
     Input x = (batchsize, channel, H, W)
     Output order:
     mixed images, mixed labels
     """
-    img_copy   = img.clone().detach()
-    lab_copy   = lab.clone().detach()
-    lam        = np.random.beta(alpha, alpha)
-    batch_size = img.size(0)
+
+    if image.dim() != 4:
+        raise ValueError('Image has wrong shape, must with (B, C, H, W)')
+
+    bz = image.size(0)
+    lam = np.random.beta(alpha, alpha)
+    image_copy = image.clone().detach()
+    label_copy = label.clone().detach()
     
-    if img.dim() == 4:
-        for i in range(batch_size):
-            rand_index = int(np.random.randint(batch_size, size = 1))
+    for i in range(bz):
+        rand_index = int(np.random.randint(bz, size=1))
+        if  i == rand_index:
+            mix_image_i = lam * image[i, ...] + (1 - lam)* image[(rand_index + 1) % bz, ...] 
+            mix_label_i = lam * label[i, ...] + (1 - lam)* label[(rand_index + 1) % bz, ...]
+            image_copy[i, ...] = mix_image_i
+            label_copy[i, ...] = mix_label_i
+        else:
+            mix_image_i = lam * image[i, ...] + (1 - lam)* image[(rand_index + 1), ...] 
+            mix_label_i = lam * label[i, ...] + (1 - lam)* label[(rand_index + 1), ...]
+            image_copy[i, ...] = mix_image_i
+            label_copy[i, ...] = mix_label_i
+
+    return image_copy, label_copy
+
+
+def cutmix(image: torch.Tensor, label: torch.Tensor, n_holes, length) -> torch.Tensor:
+    if image.dim() != 4:
+        raise ValueError('Input has wrong a shape, must with (B, C, H, W)')
+
+    bz, _, h, w = list(img.size())
+    image_copy = image.clone().detach()
+    label_copy = label.clone().detach()
+    label_ratio = length**2.0 / (h * w)
+
+    for i in range(bz):
+        rand_index = int(np.random.randint(bz, size = 1))
+        for _ in range(n_holes):
+            x1, y1, x2, y2 = bbox(h, w, length)
+
             if  i == rand_index:
-                mix_img_i   = lam * img[i, ...] + (1 - lam)* img[(rand_index+1)%batch_size, ...] 
-                mix_lab_i   = lam * lab[i, ...] + (1 - lam)* lab[(rand_index+1)%batch_size, ...]
-                img_copy[i, ...] =  mix_img_i
-                lab_copy[i, ...] =  mix_lab_i
-                
+                image_copy[i, :, y1:y2, x1:x2] = image[(rand_index + 1) % bz, :, y1:y2, x1:x2]
+                label_copy[i, :] = label[i, :] + label_ratio * label[(rand_index + 1) % bz, :]
             else:
-                mix_img_i   = lam * img[i, ...] + (1 - lam)* img[(rand_index+1), ...] 
-                mix_lab_i   = lam * lab[i, ...] + (1 - lam)* lab[(rand_index+1), ...]
-                img_copy[i, ...] =  mix_img_i
-                lab_copy[i, ...] =  mix_lab_i
-    else:
-        raise RuntimeError('Image has wrong shape, must with (B, C, H, W)')
-
-    return img_copy, lab_copy
-
-def cutmix(img: torch.Tensor, lab: torch.Tensor, n_holes, length) -> torch.Tensor:
-    img_copy   = img.clone().detach()
-    lab_copy   = lab.clone().detach()
-    batch_size = img.size(0)
-    h, w       = list(img.size())[-2:]
-    lab_ratio  = length**2.0/(h*w)
-
-    if img.dim() == 4:
-        for i in range(batch_size):
-            rand_index = int(np.random.randint(batch_size, size = 1))
-
-            for n in range(n_holes):
-                x1, y1, x2, y2 = bbox(h, w, length)
-
-                if  i == rand_index:
-                    img_copy[i,:, y1:y2, x1:x2] = img[(rand_index+1)%batch_size, :, y1:y2, x1:x2]
-                    lab_copy[i, :] = lab[i, :] + lab_ratio * lab[(rand_index+1)%batch_size, :]
+                image_copy[i,:, y1:y2, x1:x2] = img[rand_index, :, y1:y2, x1:x2]
+                label_copy[i, :] = label[i, :] + label_ratio * label[rand_index, :]
                     
-                else:
-                    img_copy[i,:, y1:y2, x1:x2] = img[rand_index, :, y1:y2, x1:x2]
-                    lab_copy[i, :] = lab[i, :] + lab_ratio * lab[rand_index, :]
-    else:
-        raise RuntimeError('Input has wrong a shape, must with (B, C, H, W)')   
-    return  img_copy, lab_copy
+    return  image_copy, label_copy
 
 
 if __name__ == "__main__":

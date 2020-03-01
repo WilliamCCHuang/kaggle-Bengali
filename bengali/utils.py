@@ -1,3 +1,4 @@
+import gc
 import os
 import cv2
 import numpy as np
@@ -24,29 +25,35 @@ def parquet_to_feather(filepath):
 
 def load_labels():
     df_labels = pd.read_csv('~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/train.csv')
+    labels = df_labels[['grapheme_root', 'vowel_diacritic', 'consonant_diacritic']].values
 
-    return df_labels
+    return labels
 
 
-def load_images(mode):
-    # TODO: concatenate all feather files
-    
+def load_images(mode='train', indices=[0, 1, 2, 3]):
     assert mode in ['train', 'test']
+    assert isinstance(indices, list)
 
-    df_list = []
+    width = 236
+    height = 137
 
     if mode == 'train':
-        for i in range(4):
-            df = pd.read_feather(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/train_image_data_{i}.feather')
-            df_list.append(df)
+        df_list = [pd.read_feather(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/train_image_data_{i}.feather') for i in indices]
     else:
-        for i in range(4):
-            df = pd.read_parquet(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/test_image_data_{i}.parquet')
-            df_list.append(df)
+        # TODO: change path when submitting on kaggle kernel
+        df_list = [pd.read_parquet(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/test_image_data_{i}.parquet') for i in indices]
     
-    df = pd.concat(df_list)
+    print(f'\nLoading {sum(len(df) for df in df_list)} images\n')
 
-    return df
+    images = [df.iloc[:, 1:].values.reshape(-1, height, width).astype(np.uint8) for df in df_list]
+
+    del df_list
+    gc.collect()
+
+    images = np.concatenate(images, axis=0)
+    images = 255 - images
+
+    return images
 
 
 def bbox(img):
@@ -59,9 +66,11 @@ def bbox(img):
     return rmin, rmax, cmin, cmax
 
 
-def crop_resize(img, size=128, pad=16):
+def crop_resize(img: np.array, size: int=128, pad: int=16) -> np.array:
     # crop a box around pixels larger than the threshold
 
+    assert img.dtype == np.uint8
+    
     width = 236
     height = 137
 
@@ -120,6 +129,21 @@ if __name__ == "__main__":
 
     # exit()
 
+    # check indices are the same
+    df_list = [pd.read_feather(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/train_image_data_{i}.feather') for i in range(4)]
+    df_images = pd.concat(df_list)
+
+    del df_list
+    gc.collect()
+
+    df_labels = load_labels()
+
+    assert len(df_images) == len(df_labels)
+    print(df_images['image_id'].equals(df_labels['image_id']))
+    assert any(df_images['image_id'] != df_labels['image_id'])
+
+    exit()    
+
     # compare the speed between opening parquet files and opening feather files
     # import time
     # start = time.time()
@@ -135,11 +159,10 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    df_images = load_images(mode='test')
+    images = load_images(mode='train', indices=[0])
 
     for i in range(5):
-        img = df_images.iloc[i][1:].values.reshape(137, 236).astype(np.uint8)
-        img = 255 - img
+        img = images[i]
         img = crop_resize(img, size=128)
         plt.imshow(img)
         plt.show()

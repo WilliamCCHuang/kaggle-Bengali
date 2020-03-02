@@ -205,6 +205,23 @@ class PlainRAdam(Optimizer):
         return loss
         
 class LookAhead(Optimizer):
+    '''
+    It's been proposed in paper: Lookahead Optimizer: k steps forward, 1 step back
+    (https://arxiv.org/pdf/1907.08610.pdf)
+    
+    Args:
+        optimizer: The optimizer object used in inner loop for fast weight updates.
+        
+        alpha:     The learning rate for slow weight update.
+                   Default: 0.5
+        
+        step_k:    Number of iterations of fast weights updates before updating slow
+                   weights.
+                   Default: 5
+    Example:
+        > optim = Lookahead(optimizer)
+        > optim = Lookahead(optimizer, alpha=0.6, k=10)
+    '''
     def __init__(self, optimizer, step_k, alpha):
         assert(step_k >= 1)
         assert( 0.0 <= alpha <= 1.0)
@@ -226,6 +243,27 @@ class LookAhead(Optimizer):
             for group, slow_weight in zip(self.param_groups, self.slow_weights):
                 for param, weight in zip(group['params'], slow_weight):
                     weight.data.add_(self.alpha, (param.data - weight.data))
+                    # add_(value) → Tensor
                     param.data.copy_(weight.data)
+                    # copy_(src, non_blocking=False) → Tensor
             self.step_cnt = 0
         return loss
+
+    def state_dict(self):
+        return self.optimizer.state_dict()
+    
+    def load_state_dict(self):
+        self.optimizer.load_state_dict(state_dict)
+
+    def __getstate__(self):
+        '''
+        A double underscore prefix avoid naming 
+        conflicts in subclasses
+        '''
+        return {
+            'state':self.state,
+            'optimizer':self.optimizer,
+            'alpha':self.alpha,
+            'step_k': self.step_k,
+            'step_cnt': self.step_cnt
+        }

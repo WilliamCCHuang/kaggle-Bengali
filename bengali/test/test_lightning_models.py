@@ -59,7 +59,7 @@ def main():
 
     # Debug Mode 
     optimizer = optim.Adam(base_model.parameters())
-    if not isinstance(optimizer, Optimizer):
+    if not isinstance(optimizer, optim.Adam):
             raise TypeError('{} is not an Optimizer'.format(
                 type(optimizer).__name__))
     

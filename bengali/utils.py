@@ -1,6 +1,7 @@
 import gc
 import os
 import cv2
+import time
 import numpy as np
 import pandas as pd
 from contextlib import contextmanager
@@ -17,6 +18,7 @@ def timer(name):
     print('[%s] in progress' % name)
     yield
     print('[%s] done in %.0f s' %(name, time.time() - t0))
+
 
 def create_dirs(file_path):
     dir_path = os.path.dirname(file_path)

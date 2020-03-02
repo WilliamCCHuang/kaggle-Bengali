@@ -3,7 +3,7 @@ import numpy as np
 
 from torch.utils.data import Dataset
 
-from utils import load_labels, load_images, crop_resize
+from utils import crop_resize
 
 
 class BengaliTrainDataset(Dataset):
@@ -30,7 +30,7 @@ class BengaliTrainDataset(Dataset):
         if self.transform:
             img = self.transform(image=img)['image']
 
-        return img, y1, y2, y3
+        return img, [y1, y2, y3]
 
 
 class BengaliTestDataset(Dataset):
@@ -69,8 +69,9 @@ class BengaliTestDataset(Dataset):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    
     from torch.utils.data import DataLoader
+
+    from utils import load_labels, load_images
 
     labels = load_labels()
     images = load_images(mode='train', indices=[0])

@@ -2,26 +2,13 @@ import math
 import torch
 from torch.optim import Optimizer
 from collections import defaultdict
-from itertools import chain
-import warnings
+
 
 class RAdam(Optimizer):
     """
     https://github.com/LiyuanLucasLiu/RAdam/blob/master/radam/radam.py#L5
-    
-    Arguments:
-        Optimizer {[type]} -- [description]
-    
-    Raises:
-        ValueError: [description]
-        ValueError: [description]
-        ValueError: [description]
-        ValueError: [description]
-        RuntimeError: [description]
-    
-    Returns:
-        [type] -- [description]
     """
+
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, degenerated_to_sgd=True):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -203,67 +190,3 @@ class PlainRAdam(Optimizer):
                     p.data.copy_(p_data_fp32)
 
         return loss
-        
-class LookAhead(Optimizer):
-    '''
-    It's been proposed in paper: Lookahead Optimizer: k steps forward, 1 step back
-    (https://arxiv.org/pdf/1907.08610.pdf)
-    
-    Args:
-        optimizer: The optimizer object used in inner loop for fast weight updates.
-        
-        alpha:     The learning rate for slow weight update.
-                   Default: 0.5
-        
-        step_k:    Number of iterations of fast weights updates before updating slow
-                   weights.
-                   Default: 5
-    Example:
-        > optim = Lookahead(optimizer)
-        > optim = Lookahead(optimizer, alpha=0.6, k=10)
-    '''
-    def __init__(self, optimizer, step_k, alpha):
-        assert(step_k >= 1)
-        assert( 0.0 <= alpha <= 1.0)
-
-        self.optimizer = optimizer
-        self.step_k = step_k
-        self.step_cnt = 0
-        self.alpha = alpha
-        self.param_groups = self.optimizer.param_groups
-        self.state = defaultdict(dict)
-        self.slow_weights = [[param.clone().detach() for param in group['params']] for group in self.param_groups]
-        #tensor.detach() creates a tensor that shares storage with tensor that does not require grad. 
-        #tensor.clone()creates a copy of tensor that imitates the original tensor's requires_grad field.
-
-    def step_k(self, closure = None):
-        loss = self.optimizer.step(closure)
-        self.step_cnt += 1
-        if self.step_cnt >= self.step_k:
-            for group, slow_weight in zip(self.param_groups, self.slow_weights):
-                for param, weight in zip(group['params'], slow_weight):
-                    weight.data.add_(self.alpha, (param.data - weight.data))
-                    # add_(value) → Tensor
-                    param.data.copy_(weight.data)
-                    # copy_(src, non_blocking=False) → Tensor
-            self.step_cnt = 0
-        return loss
-
-    def state_dict(self):
-        return self.optimizer.state_dict()
-    
-    def load_state_dict(self):
-        self.optimizer.load_state_dict(state_dict)
-
-    def __getstate__(self):
-        '''
-        A double underscore prefix avoid naming 
-        conflicts in subclasses
-        '''
-        return {
-            'state':self.state,
-            'optimizer':self.optimizer,
-            'alpha':self.alpha,
-            'step_k': self.step_k,
-            'step_cnt': self.step_cnt
-        }

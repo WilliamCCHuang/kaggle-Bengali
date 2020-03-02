@@ -12,7 +12,7 @@ from pytorch_utils.losses import *
 from pytorch_utils.optimizers import RAdam
 
 import pytorch_lightning as pl
-
+from torch.optim import Optimizer
 
 TRAIN_DIR = 'data/' # TODO:
 TEST_DIR = 'data/' #TODO:
@@ -21,6 +21,7 @@ TEST_DIR = 'data/' #TODO:
 def build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--loss', default='crossentropyloss')
+    parser.add_argument('--optimizer', default='Radam')
     parser.add_argument('--hidden_dim', default=128)
     parser.add_argument('--dropout', default=0.5)
     parser.add_argument('--epochs', default=100)
@@ -41,6 +42,9 @@ def check_args(args):
         'topkcrossentropyloss',
         'labelsmoothingcrossentropyloss',
         'focalloss',
+    ]
+    assert args.optimizer.lower() in [
+        'radam', 'adam',
     ]
 
     assert isinstance(args.task_weights, list), args.task_weights
@@ -64,7 +68,6 @@ def main():
     # args
     parser = build_parser()
     args = parser.parse_args()
-
     check_args(args)
 
     # data

@@ -57,10 +57,17 @@ def main():
     val_dataloader = DataLoader(TestDataset(), batch_size=5, shuffle=False)
 
     base_model = BaseModel()
+<<<<<<< HEAD
     optimizer = optim.Adam(base_model.parameters(), lr=1.0)
     # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
     scheduler = FlatCosineAnnealing(optimizer, epochs=50, flat_duration=10)
     # scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1, eta_min=0.1)
+=======
+
+    optimizer = optim.Adam(base_model.parameters())
+    
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
+>>>>>>> 86aa9fc20fbbd496c6e33b5f05ab7458abef2b56
     model = BengaliLightningModel(base_model, train_dataloader, val_dataloader,
                                   MultiTaskCrossEntropyLoss(n_task=3), optimizer, scheduler)
 

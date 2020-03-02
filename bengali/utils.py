@@ -2,7 +2,20 @@ import os
 import cv2
 import numpy as np
 import pandas as pd
+from contextlib import contextmanager
 
+
+@contextmanager
+def timer(name):
+    """
+    utility timer function to check how long a piece of code might take to run.
+    :param name: name of the code fragment to be timed
+    :yield: time taken for the code to run
+    """
+    t0 = time.time()
+    print('[%s] in progress' % name)
+    yield
+    print('[%s] done in %.0f s' %(name, time.time() - t0))
 
 def create_dirs(file_path):
     dir_path = os.path.dirname(file_path)

@@ -22,6 +22,7 @@ TEST_DIR = 'data/' #TODO:
 def build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--loss', default='crossentropyloss')
+    parser.add_argument('--optimizer', default='Radam')
     parser.add_argument('--hidden_dim', default=128)
     parser.add_argument('--dropout', default=0.5)
     parser.add_argument('--epochs', default=100)
@@ -34,7 +35,7 @@ def build_parser():
     parser.add_argument('--task_weights', nargs='+', default=[1./3, 1./3, 1./3])
     
     return parser
-    
+
 
 def check_args(args):
     assert args.loss in [
@@ -43,16 +44,25 @@ def check_args(args):
         'labelsmoothingcrossentropyloss',
         'focalloss',
     ]
+    assert args.optimizer.lower() in [
+        'radam', 'adam',
+    ]
 
     assert isinstance(args.task_weights, list), args.task_weights
     assert sum(args.task_weights) == 1.0, args.task_weights
 
 
 def build_loss(args):
+
     if args.loss == 'crossentropyloss':
-        return MultiTaskCrossEntropyLoss(n_task=3, task_weights=args.task_weights)
+        return MultiTaskCrossEntropyLoss(n_task=3, 
+                                task_weights=args.task_weights)
+
     if args.loss == 'labelsmoothingcrossentropyloss':
-        return MultiTaskLabelSmoothingCrossEntropyLoss(n_task=3, tast_weights=args.tast_weights, smoothings=args.smoothing)
+        return MultiTaskLabelSmoothingCrossEntropyLoss(n_task=3, 
+                                tast_weights=args.tast_weights, 
+                                smoothings=args.smoothing)
+
     if args.loss == 'focalloss':
         return MultiTaskLoss(criterions=[
             FocalLoss(alpha=args.alpha, gamma=args.gamma),
@@ -65,7 +75,6 @@ def main():
     # args
     parser = build_parser()
     args = parser.parse_args()
-
     check_args(args)
 
     # data
@@ -75,7 +84,10 @@ def main():
 
     # model
     criterions = build_loss(args)
-    base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', hidden_dim=args.hidden_dim, dropout=args.dropout)
+    base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', 
+                                  hidden_dim=args.hidden_dim, 
+                                  dropout=args.dropout)
+
     optimizer = RAdam(base_cnn_model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, )
 

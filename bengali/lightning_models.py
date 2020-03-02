@@ -1,6 +1,3 @@
-import os
-os.sys.path.append('~/AI/Kaggle/Bengalai/kaggle-Bengali/bengali')
-
 import numpy as np
 
 import torch

@@ -39,7 +39,7 @@ def parquet_to_feather(filepath):
 
 
 def load_labels():
-    df_labels = pd.read_csv('~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/train.csv')
+    df_labels = pd.read_csv('/home/jarvis1121/AI/Kaggle/Bengali/Data/bengaliai-cv19/train.csv')
     labels = df_labels[['grapheme_root', 'vowel_diacritic', 'consonant_diacritic']].values
 
     return labels
@@ -53,10 +53,10 @@ def load_images(mode='train', indices=[0, 1, 2, 3]):
     height = 137
 
     if mode == 'train':
-        df_list = [pd.read_feather(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/train_image_data_{i}.feather') for i in indices]
+        df_list = [pd.read_feather(f'/home/jarvis1121/AI/Kaggle/Bengali/Data/bengaliai-cv19/train_image_data_{i}.feather') for i in indices]
     else:
         # TODO: change path when submitting on kaggle kernel
-        df_list = [pd.read_parquet(f'~/AI/Kaggle/Bengalai/Data/bengaliai-cv19/test_image_data_{i}.parquet') for i in indices]
+        df_list = [pd.read_parquet(f'/home/jarvis1121/AI/Kaggle/Bengali/Data/bengaliai-cv19/test_image_data_{i}.parquet') for i in indices]
     
     print(f'\nLoading {sum(len(df) for df in df_list)} images\n')
 

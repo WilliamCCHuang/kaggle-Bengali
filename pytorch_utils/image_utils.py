@@ -7,17 +7,44 @@ import torch
 import torchvision.transforms as transforms
 
 
-def load_image(image_path: str, mode: str='RGB', size: Union[int, tuple, list]=None) -> Image.Image:
-    image = Image.open(image_path)
-    image = image.convert(mode=mode)
+def load_image(image_path: str, mode: str='RGB', size: Union[int, tuple, list]=None) -> np.array:
+    img = Image.open(image_path)
+    img = image.convert(mode=mode)
     
     if size is not None:
-        image = image.resize(size)
+        img = img.resize(size, Image.ANTIALIAS)
     
-    return image
+    img = np.array(img)
+
+    return img
 
 
-def image_to_tensor(image: Image.Image) -> torch.tensor:
+def resize(img: Union[np.array, Image.Image], size: Union[int, list, tuple]=128) -> np.array:
+    if isinstance(size, int):
+        size = (size, size)
+
+    if isinstance(img, np.array):
+        return cv2.resize(img, size)
+    elif isinstance(img, Image.Image):
+        img = img.resize(size, Image.ANTIALIAS)
+        img = np.array(img)
+
+        reutnr img
+    else:
+        raise ValueError(f'Unrecognize image type {type(img)}')
+
+
+def image_to_tensor(image: Union[np.array, Image.Image]) -> torch.tensor:
+    """
+    Change an image to a tensor with the addition first dimension indicating batch size
+    
+    Arguments:
+        image {Union[np.array, Image.Image]} -- [description]
+    
+    Returns:
+        torch.tensor -- [description]
+    """
+
     tensor = transforms.ToTensor()(image)
     tensor = torch.unsqueeze(tensor, dim=0)
     

@@ -57,11 +57,7 @@ def main():
 
     base_model = BaseModel()
 
-    # Debug Mode 
     optimizer = optim.Adam(base_model.parameters())
-    if not isinstance(optimizer, optim.Adam):
-            raise TypeError('{} is not an Optimizer'.format(
-                type(optimizer).__name__))
     
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
     model = BengaliLightningModel(base_model, train_dataloader, val_dataloader,

@@ -1,17 +1,18 @@
 import os
-# os.sys.path.append('/Users/william/Documents/kaggle/kaggle-Bengali')
-# print(os.sys.path)
+os.sys.path.append('/Users/william/Documents/kaggle/kaggle-Bengali')
 
 import argparse
+import torch.optim as optim
 
+import pytorch_lightning as pl
+
+from base_models import BaseCNNModel
 from lightning_models import BengaliLightningModel
 from datasets import BengaliTrainDataset, BengaliTestDataset
-from base_models import BaseCNNModel
+from utils import load_images
 
 from pytorch_utils.losses import *
 from pytorch_utils.optimizers import RAdam
-
-import pytorch_lightning as pl
 
 
 TRAIN_DIR = 'data/' # TODO:
@@ -76,8 +77,9 @@ def main():
     criterions = build_loss(args)
     base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', hidden_dim=args.hidden_dim, dropout=args.dropout)
     optimizer = RAdam(base_cnn_model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, )
 
-    model = BengaliLightningModel(model=base_cnn_model,
+    model = BengaliLightningModel(base_model=base_cnn_model,
                                   train_dataloader=train_dataloader,
                                   val_dataloader=val_dataloader,
                                   criterions=criterions,

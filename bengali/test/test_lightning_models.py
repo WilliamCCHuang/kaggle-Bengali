@@ -13,6 +13,7 @@ import torchvision.transforms as transforms
 
 from lightning_models import BengaliLightningModel
 from pytorch_utils.losses import MultiTaskCrossEntropyLoss
+from pytorch_utils.scheduler import FlatCosineAnnealing
 
 import pytorch_lightning as pl
 
@@ -56,14 +57,16 @@ def main():
     val_dataloader = DataLoader(TestDataset(), batch_size=5, shuffle=False)
 
     base_model = BaseModel()
-    optimizer = optim.Adam(base_model.parameters())
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
+    optimizer = optim.Adam(base_model.parameters(), lr=1.0)
+    # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
+    scheduler = FlatCosineAnnealing(optimizer, epochs=50, flat_duration=10)
+    # scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1, eta_min=0.1)
     model = BengaliLightningModel(base_model, train_dataloader, val_dataloader,
                                   MultiTaskCrossEntropyLoss(n_task=3), optimizer, scheduler)
 
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(filepath='models/trial_1', monitor='val_total_loss',
-                                                       verbose=1, mode='min')
-    trainer = pl.Trainer(max_epochs=5, early_stop_callback=False, checkpoint_callback=checkpoint_callback) # for cpu
+    # checkpoint_callback = pl.callbacks.ModelCheckpoint(filepath='models/trial_1', monitor='val_total_loss',
+    #                                                    verbose=1, mode='min')
+    trainer = pl.Trainer(max_epochs=50, early_stop_callback=False, checkpoint_callback=None) # for cpu
     # trainer = pl.Trainer(max_epochs=20, early_stop_callback=False, checkpoint_callback=checkpoint_callback, gpus=1) # for gpu
     
     trainer.fit(model)

@@ -1,5 +1,6 @@
 import os
-# os.sys.path.append('/Users/william/Documents/kaggle/kaggle-Bengali')
+import sys
+sys.path.append('/home/jarvis1121/AI/Kaggle/Bengali/kaggle-Bengali')
 
 import argparse
 import torch.optim as optim
@@ -23,10 +24,12 @@ def build_parser():
 
     parser.add_argument('--model_name', default='se_resnext101_32x4d')
 
+    parser.add_argument('--size', default=128)
     parser.add_argument('--test_size', default=0.3)
 
     parser.add_argument('--lr', default=1e-3)
     parser.add_argument('--epochs', default=100)
+    parser.add_argument('--batch_size', default=64)
     parser.add_argument('--weight_decay', default=1e-4)
 
     parser.add_argument('--loss', default='crossentropyloss')
@@ -166,7 +169,7 @@ def main():
                          gpus=args.gpus,
                          early_stop_callback=False,
                          checkpoint_callback=checkpoint_callback)
-                         
+
     trainer.fit(model)
 
 

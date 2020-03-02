@@ -34,7 +34,7 @@ def build_parser():
     parser.add_argument('--task_weights', nargs='+', default=[1./3, 1./3, 1./3])
     
     return parser
-    
+
 
 def check_args(args):
     assert args.loss in [
@@ -52,10 +52,16 @@ def check_args(args):
 
 
 def build_loss(args):
+
     if args.loss == 'crossentropyloss':
-        return MultiTaskCrossEntropyLoss(n_task=3, task_weights=args.task_weights)
+        return MultiTaskCrossEntropyLoss(n_task=3, 
+                                task_weights=args.task_weights)
+
     if args.loss == 'labelsmoothingcrossentropyloss':
-        return MultiTaskLabelSmoothingCrossEntropyLoss(n_task=3, tast_weights=args.tast_weights, smoothings=args.smoothing)
+        return MultiTaskLabelSmoothingCrossEntropyLoss(n_task=3, 
+                                tast_weights=args.tast_weights, 
+                                smoothings=args.smoothing)
+
     if args.loss == 'focalloss':
         return MultiTaskLoss(criterions=[
             FocalLoss(alpha=args.alpha, gamma=args.gamma),
@@ -77,7 +83,10 @@ def main():
 
     # model
     criterions = build_loss(args)
-    base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', hidden_dim=args.hidden_dim, dropout=args.dropout)
+    base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', 
+                                  hidden_dim=args.hidden_dim, 
+                                  dropout=args.dropout)
+
     optimizer = RAdam(base_cnn_model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     model = BengaliLightningModel(model=base_cnn_model,

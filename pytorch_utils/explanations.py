@@ -5,12 +5,21 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 
-from image_utils import load_image, image_to_tensor
+from image_utils import resize, image_to_tensor
 
 
 class GradCAM:
 
-    def __init__(self, model):
+    def __init__(self, model, idx2label=None):
+        """
+        Grad-CAM
+        
+        Arguments:
+            model {nn.Module} -- A PyTorch model
+            idx2label {function} -- A dictionary that can map a class index to a class label, \
+                otherwise the class index would be shown instead. 
+        """
+
         assert 'input_size' in dir(model), '`model` should have an attribute called `input_size`.'
         assert 'features' in dir(model), '`model` should have a method called `features`.'
         assert 'logits' in dir(model), '`model` should have a method called `logits`.'
@@ -20,8 +29,8 @@ class GradCAM:
         self.gradients = None
         self.predictions = None
         self.feature_maps = None
-        self.idx2label = load_class_idx() # TODO:
-        self.input_size = self.model.input_size[1:]
+        self.idx2label = idx2label
+        self.input_size = self.model.input_size[1:]  # (H, W)
         
         self.model.eval()
     
@@ -41,25 +50,23 @@ class GradCAM:
             self.outputs = probas
         
         self.predictions = probas.detach().numpy().squeeze()  # (n_classes,)
-        self.feature_maps = feature_maps.detach().numpy().squeeze()  # (c, h, w)
+        self.feature_maps = feature_maps.detach().numpy().squeeze()  # (C, H, W)
         
-    def _backward_pass(self, class_idx):    
-        onehot_target = torch.zeros(self.predictions.shape, dtype=torch.float)  # (n_classes,)
+    def _backward_pass(self, class_idx):
+        onehot_target = torch.zeros_like(self.predictions, dtype=torch.float)  # (n_classes,)
         onehot_target = torch.unsqueeze(onehot_target, dim=0)  # (1, n_classes)
-        onehot_target[0][class_idx] = 1
+        onehot_target[0, class_idx] = 1.0
         
         self.model.zero_grad()
         self.outputs.backward(gradient=onehot_target)
         
-    def _get_class_idx(self, i):
+    def _get_class_idx(self, top_i):
         class_idx = self.predictions.argsort()
-        class_idx = class_idx[-i]
+        class_idx = class_idx[-top_i]
         
         return class_idx
     
-    def generate_heatmap(self, img, class_idx,
-                         counterfactual=False,
-                         relu_on_gradients=False,
+    def generate_heatmap(self, img, class_idx, counterfactual=False, relu_on_gradients=False,
                          use_logits=True):
         if isinstance(img, Image.Image):
             img = image_to_tensor(img)
@@ -72,9 +79,6 @@ class GradCAM:
         else:
             weights = np.mean(self.gradients, axis=(1, 2))
         weights = weights.reshape((-1, 1, 1))
-        
-#         print(weights.min())
-#         print(weights.max())
         
         if counterfactual:
             weights = - weights
@@ -89,16 +93,13 @@ class GradCAM:
         
         return heatmap
         
-    def plot_image_heatmap(self, img_path, top=1,
-                           counterfactual=False,
-                           relu_on_gradients=False,
-                           use_logits=True,
-                           save_path=None):
-        img = load_image(img_path, size=self.input_size)
-        img_tensor = image_to_tensor(img)
-        
-        self._forward_pass(img_tensor, use_logits)
-        
+    def plot_image_heatmap(self, img, top=1, counterfactual=False, relu_on_gradients=False,
+                           use_logits=True, save_path=None):
+        img = resize(img, size=self.input_size)  # (H, W, C)
+
+        if isinstance(img, Image.Image):
+            img = image_to_tensor(img)  # (1, C, H, W)
+
         plt.imshow(img)
         plt.axis('off')
         
@@ -111,10 +112,11 @@ class GradCAM:
                 plt.title('original image')
                 plt.axis('off')
             else:
-                class_idx = self._get_class_idx(i)
-                label = self.idx2label[class_idx]
-                proba = self.predictions[class_idx]
                 heatmap = self.generate_heatmap(img_tensor, class_idx, counterfactual, relu_on_gradients, use_logits)
+
+                class_idx = self._get_class_idx(top_i=i)
+                proba = self.predictions[class_idx]
+                label = self.idx2label[class_idx] if self.idx2label else str(class_idx)
                 
                 plt.subplot(1, cols, i+1)
                 plt.imshow(img, alpha=1.0)

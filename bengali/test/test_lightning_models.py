@@ -56,7 +56,9 @@ def main():
     val_dataloader = DataLoader(TestDataset(), batch_size=5, shuffle=False)
 
     base_model = BaseModel()
+
     optimizer = optim.Adam(base_model.parameters())
+    
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: epoch / 10.)
     model = BengaliLightningModel(base_model, train_dataloader, val_dataloader,
                                   MultiTaskCrossEntropyLoss(n_task=3), optimizer, scheduler)

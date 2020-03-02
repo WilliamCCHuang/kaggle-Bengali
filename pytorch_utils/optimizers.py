@@ -190,32 +190,3 @@ class PlainRAdam(Optimizer):
                     p.data.copy_(p_data_fp32)
 
         return loss
-
-
-class LookAhead(Optimizer):
-
-    def __init__(self, optimizer, step_k, alpha):
-        assert(step_k >= 1)
-        assert( 0.0 <= alpha <= 1.0)
-
-        self.optimizer = optimizer
-        self.step_k = step_k
-        self.step_cnt = 0
-        self.alpha = alpha
-        self.param_groups = self.optimizer.param_groups
-        self.state = defaultdict(dict)
-        self.slow_weights = [[param.clone().detach() for param in group['params']] for group in self.param_groups]
-        #tensor.detach() creates a tensor that shares storage with tensor that does not require grad. 
-        #tensor.clone()creates a copy of tensor that imitates the original tensor's requires_grad field.
-
-    def step_k(self, closure=None):
-        loss = self.optimizer.step(closure)
-        self.step_cnt += 1
-        if self.step_cnt >= self.step_k:
-            for group, slow_weight in zip(self.param_groups, self.slow_weights):
-                for param, weight in zip(group['params'], slow_weight):
-                    weight.data.add_(self.alpha, (param.data - weight.data))
-                    param.data.copy_(weight.data)
-            self.step_cnt = 0
-            
-        return loss

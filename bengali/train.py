@@ -14,7 +14,7 @@ from utils import load_labels, load_images
 from lightning_models import BengaliLightningModel
 from datasets import BengaliTrainDataset, BengaliTestDataset
 
-from pytorch_utils.losses import *
+from pytorch_utils.losses import FocalLoss, MultiTaskLoss, MultiTaskCrossEntropyLoss, MultiTaskLabelSmoothingCrossEntropyLoss
 from pytorch_utils.optimizers import RAdam, Ranger, LookaheadAdam
 from pytorch_utils.schedulers import FlatCosineAnnealing
 
@@ -22,7 +22,10 @@ from pytorch_utils.schedulers import FlatCosineAnnealing
 def build_parser():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('exp', help='The index of this experiment')
+
     parser.add_argument('--model_name', default='se_resnext101_32x4d')
+    parser.add_argument('--activation', default='ReLU')
 
     parser.add_argument('--size', default=128)
     parser.add_argument('--test_size', default=0.3)
@@ -65,6 +68,11 @@ def check_args(args):
         'efficientnet-b7'
     ]
 
+    assert args.activation.lower() in [
+        'relu',
+        'mish'
+    ]
+    
     assert args.loss in [
         'crossentropyloss',
         'topkcrossentropyloss',
@@ -125,7 +133,7 @@ def build_scheduler(args, optimizer):
         return optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=args.reduce_factor)
     else:
         # 'flatcosineannealing'
-        return FlatCosineAnnealing(optimizer, epochs=args.epochs, flat_duration=arg.flat_duration)
+        return FlatCosineAnnealing(optimizer, epochs=args.epochs, flat_duration=args.flat_duration)
 
 
 def main():
@@ -135,6 +143,8 @@ def main():
     check_args(args)
 
     # data
+    print('\n===== Starting preparing data =====\n')
+
     labels = load_labels()
     images = load_images(mode='train')
 
@@ -145,11 +155,14 @@ def main():
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=os.cpu_count())
     val_dataloader = DataLoader(val_dataset, batch_size=512, shuffle=False, num_workers=os.cpu_count())
 
+    print('\n===== Completed preparing data =====')
+
     # model
     criterions = build_loss(args)
     base_cnn_model = BaseCNNModel(model_name='se_resnext50_32x4d', 
                                   hidden_dim=args.hidden_dim, 
-                                  dropout=args.dropout)
+                                  dropout=args.dropout,
+                                  activation=args.activation)
 
     optimizer = build_optimizer(args, base_cnn_model)
     scheduler = build_scheduler(args, optimizer)
@@ -162,8 +175,11 @@ def main():
                                   scheduler=scheduler)
     
     # callbacks
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(filepath=f'models/trial_{arg.trial}', monitor='val_total_loss',
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(filepath=f'models/trial_{args.exp}', monitor='val_total_loss',
                                                        verbose=1, mode='min')
+    
+    print('\n===== Starting training =====')
+    
     # train
     trainer = pl.Trainer(max_epochs=args.epochs,
                          gpus=args.gpus,
@@ -171,6 +187,8 @@ def main():
                          checkpoint_callback=checkpoint_callback)
 
     trainer.fit(model)
+
+    print('\n===== End training =====')
 
 
 if __name__ == "__main__":

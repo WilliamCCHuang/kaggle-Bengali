@@ -3,68 +3,84 @@ import numpy as np
 
 from torch.utils.data import Dataset
 
+from utils import crop_resize
+
 
 class BengaliTrainDataset(Dataset):
 
-    def __init__(self, df_images, df_labels=None, transform=None):
+    def __init__(self, images, labels, size=128, transform=None):
         super(BengaliTrainDataset, self).__init__()
 
-        self.df_image = df_images
-        self.df_label = df_labels
+        self.size = size
+        self.images = images
+        self.labels = labels
         self.transform = transform
-        self.size = (137, 236)
         
     def __len__(self):
-        return len(self.df_image)
+        return len(self.labels)
     
     def __getitem__(self, idx):
-        image = self.df_image.iloc[idx][1:].values.reshape(*self.size).astype(np.uint8)
+        img = self.images[idx]
+        img = crop_resize(img, size=self.size)
+        img = img.astype(np.float32).reshape(1, self.size, self.size)
+        img /= 255.
 
-        label1 = self.df_label.grapheme_root.values[idx]
-        label2 = self.df_label.vowel_diacritic.values[idx]
-        label3 = self.df_label.consonant_diacritic.values[idx]
+        y1, y2, y3 = self.labels[idx]
         
         if self.transform:
-            augment = self.transform(image=image)
-            image = augment['image']
+            img = self.transform(image=img)['image']
 
-        return image, label1, label2, label3
+        return img, [y1, y2, y3]
 
 
 class BengaliTestDataset(Dataset):
     
-    def __init__(self, df_images, transform=None, TTA=False):
+    def __init__(self, images, size=128, transform=None, TTA=False):
         super(BengaliTestDataset, self).__init__()
 
         self.TTA = TTA
-        self.df_images = df_images
+        self.size = size
+        self.images = images
         self.transform = transform
-        self.size = (137, 236)
+
+        if TTA:
+            if transform is None:
+                raise ValueError('`transform` cannot be `None` when `TTA` is `True`')
         
     def __len__(self):
-        return len(self.df_images)
+        return len(self.images)
     
     def __getitem__(self, idx):
-        image = self.df_images.iloc[idx][1:].values.reshape(*self.size).astype(np.uint8)
+        img = self.images[idx]
+        img = crop_resize(img, size=self.size)
+        img = img.astype(np.float32).reshape(1, self.size, self.size)
+        img /= 255.
 
         if not self.TTA:
-            return image
+            return img
         if self.TTA and self.transform:
-            images = [image]
+            images = [img]
             for _ in range(self.TTA - 1):
-                augment = self.transform(image=image)
-                image = augment['image']
-                images.append(image)
+                aug_img = self.transform(image=img)['image']
+                images.append(aug_img)
         
             return images
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    from utils import load_images
+    from torch.utils.data import DataLoader
 
-    df_images = load_images(mode='test')
-    dataset = BengaliTestDataset(df_images, TTA=False)
-    img = dataset[0]
-    plt.imshow(img)
-    plt.show()
+    from utils import load_labels, load_images
+
+    labels = load_labels()
+    images = load_images(mode='train', indices=[0])
+    dataset = BengaliTrainDataset(images, labels, size=128)
+    dataloader = DataLoader(dataset, batch_size=5)
+    
+    for images, labels1, labels2, labels3 in dataloader:
+        print('images:', images.size())
+        print(labels1)
+        print(labels2)
+        print(labels3)
+        break

@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from bengali_utils import (
+from utils import (
     create_dirs,
     load_images,
-    crop_char_image,
-    resize
+    crop_resize
 )
 
 
@@ -17,8 +16,7 @@ def main(mode, size=128, file_path=None):
     for i in range(len(df_images)):
         img = df_images.iloc[i, 1:].values.reshape(137, 236).astype(np.uint8) / 255.0
         img = 1 - img
-        img = crop_char_image(img, threshold=20.0/255.0)
-        img = resize(img, size)
+        img = crop_resize(img, size=size)
         df_new.iloc[i, 1:] = img.reshape(-1)
 
     df_new = df_new.reset_index().drop('index', axis=1)

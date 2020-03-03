@@ -38,7 +38,6 @@ class MultiTaskLightningModel(pl.LightningModule):
         total_loss, losses = self.criterions(y_preds, y_trains) # train loss should be a torch.tensor
 
         tensorboard_logs = {
-            'total_loss': total_loss,
             **{
                 f'loss_{i+1}': loss for i, loss in enumerate(losses)
             }
@@ -52,8 +51,8 @@ class MultiTaskLightningModel(pl.LightningModule):
     def get_lr(self):
         lr_dict = {}
 
-        if hasattr(self, 'scheduler'):
-            lrs = self.scheduler.get_last_lr() # list
+        if hasattr(self, 'optimizer'):
+            lrs = [group['lr'] for group in self.optimizer.param_groups]
 
             if len(lrs) == 1:
                 lr_dict['lr'] = lrs[0]

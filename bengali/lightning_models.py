@@ -64,7 +64,7 @@ class BengaliLightningModel(MultiTaskLightningModel):
                                                         n_grapheme=10, n_vowel=10, n_consonant=10)
 
         tensorboard_logs = {
-            'val_total_loss': total_val_loss,
+            'val_loss': total_val_loss,
             **{
                 f'val_loss_{i+1}': loss for i, loss in enumerate([val_loss_1, val_loss_2, val_loss_3])
             },

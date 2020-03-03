@@ -1,9 +1,37 @@
+import argparse
 import numpy as np
 import pandas as pd
 from typing import Union
 
 import torch
 import torch.nn as nn
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return bool
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):  
+        return True  
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):  
+        return False  
+    else:  
+        raise argparse.ArgumentTypeError('Boolean value expected.') 
+
+
+def check_args_to_run(args):
+    print('\nThe arguments:')
+    for arg in vars(args):
+        print(f'* {arg} = {getattr(args, arg)}')
+
+    result = input('\nDo you wanna run? (y/n):')
+
+    if result in ['y', 'Y']:
+        print('Run!')
+    elif result in ['n', 'N']:
+        print('Exit!')
+        exit()
+    else:
+        raise ValueError('You can only type in \'y\', \'Y\', \'n\', or \'N\'.')
 
 
 def change_to_tensor(x: Union[np.array, pd.DataFrame], requires_grad: bool=True) -> torch.tensor:

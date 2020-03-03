@@ -5,6 +5,8 @@ import torch.nn.functional as F
 import pretrainedmodels
 from efficientnet_pytorch import EfficientNet
 
+from pytorch_utils.activations import Mish
+
 
 class BaseCNNModel(nn.Module):
     '''
@@ -17,8 +19,14 @@ class BaseCNNModel(nn.Module):
     We follow this number for now.
         
     '''
-    def __init__(self, model_name, hidden_dim, dropout):
+    def __init__(self, model_name, hidden_dim, dropout, activation):
         super(BaseCNNModel, self).__init__()
+
+        if activation.lower() == 'relu':
+            activation = F.relu
+        elif activation.lower() == 'mish':
+            activation = Mish()
+
         self.model_name = model_name # just for record
         self.hidden_dim = hidden_dim
 
@@ -53,6 +61,7 @@ class BaseCNNModel(nn.Module):
 
         self.dropout = nn.Dropout(p=dropout) if dropout else None
         self.pool = nn.AdaptiveAvgPool2d((1,1))
+        self.act = activation
     
     def features(self, inputs):
         if self.model_name.startswith('efficientnet'):
@@ -69,7 +78,7 @@ class BaseCNNModel(nn.Module):
 
             output = output.view(output.size(0), -1)
             output = linear_1(output)
-            output = F.relu(output)
+            output = self.act(output)
 
             if not self.dropout:
                 output = self.dropout(output)
@@ -80,7 +89,7 @@ class BaseCNNModel(nn.Module):
             output = self.pool(inputs)
             output = output.view(output.size(0), -1)
             output = linear_1(output)
-            output = F.relu(output)
+            output = self.act(output)
             
             if not self.dropout:
                 output = self.dropout(output)
@@ -88,11 +97,11 @@ class BaseCNNModel(nn.Module):
             output = linear_2(output)
             
         elif self.model_name.startswith('densenet'):
-            output = F.relu(inputs, inplace = True)
+            output = self.act(inputs, inplace = True)
             output = self.pool(output)
             output = output.view(output.size(0), -1)
             output = linear_1(output)
-            output = F.relu(output)
+            output = self.act(output)
             
             if not self.dropout:
                 output = self.dropout(output)
@@ -107,7 +116,7 @@ class BaseCNNModel(nn.Module):
 
             output = output.view(output.size(0), -1)
             output = linear_1(output)
-            output = F.relu(output)
+            output = self.act(output)
 
             if not self.dropout:
               output = self.dropout(output)
@@ -122,7 +131,7 @@ class BaseCNNModel(nn.Module):
 
             output = output.view(output.size(0), -1)
             output = linear_1(output)
-            output = F.relu(output)
+            output = self.act(output)
 
             if not self.dropout:
               output = self.dropout(output)

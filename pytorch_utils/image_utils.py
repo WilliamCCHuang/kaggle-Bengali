@@ -29,7 +29,7 @@ def resize(img: Union[np.array, Image.Image], size: Union[int, list, tuple]=128)
         img = img.resize(size, Image.ANTIALIAS)
         img = np.array(img)
 
-        reutnr img
+        return img
     else:
         raise ValueError(f'Unrecognize image type {type(img)}')
 

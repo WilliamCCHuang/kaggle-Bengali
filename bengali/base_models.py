@@ -80,7 +80,7 @@ class BaseCNNModel(nn.Module):
             output = linear_1(output)
             output = self.act(output)
 
-            if not self.dropout:
+            if self.dropout:
                 output = self.dropout(output)
 
             output = linear_2(output)

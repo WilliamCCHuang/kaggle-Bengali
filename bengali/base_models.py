@@ -73,7 +73,7 @@ class BaseCNNModel(nn.Module):
         if self.model_name.startswith('efficientnet'):
             output = self.pool(inputs)
 
-            if not self.dropout:
+            if self.dropout:
                 output = self.dropout(output)
 
             output = output.view(output.size(0), -1)
@@ -91,7 +91,7 @@ class BaseCNNModel(nn.Module):
             output = linear_1(output)
             output = self.act(output)
             
-            if not self.dropout:
+            if self.dropout:
                 output = self.dropout(output)
 
             output = linear_2(output)
@@ -103,7 +103,7 @@ class BaseCNNModel(nn.Module):
             output = linear_1(output)
             output = self.act(output)
             
-            if not self.dropout:
+            if self.dropout:
                 output = self.dropout(output)
 
             output = linear_2(output)
@@ -111,14 +111,14 @@ class BaseCNNModel(nn.Module):
         elif self.model_name.startswith('se_resnet'):
             output = self.pool(inputs)
 
-            if not self.dropout:
+            if self.dropout:
               output = self.dropout(output)
 
             output = output.view(output.size(0), -1)
             output = linear_1(output)
             output = self.act(output)
 
-            if not self.dropout:
+            if self.dropout:
               output = self.dropout(output)
 
             output = linear_2(output)
@@ -126,14 +126,14 @@ class BaseCNNModel(nn.Module):
         elif self.model_name.startswith('se_resnext'):
             output = self.pool(inputs)
 
-            if not self.dropout:
+            if self.dropout:
               output = self.dropout(output)
 
             output = output.view(output.size(0), -1)
             output = linear_1(output)
             output = self.act(output)
 
-            if not self.dropout:
+            if self.dropout:
               output = self.dropout(output)
 
             output = linear_2(output)
